@@ -70,7 +70,7 @@ def hfc_ons_detect(gt_onsets, file_name, out_dir):
     # Compute onset based on High frequency content with madmom
     hfc_ons = madmom.features.onsets.high_frequency_content(spec_mdm)
     # Applying the peak picking function to count number of onsets
-    peaks = madmom.features.onsets.peak_picking(hfc_ons,threshold=2.5, smooth=None, pre_avg=25, post_avg=25, pre_max=1, post_max=1)
+    peaks = madmom.features.onsets.peak_picking(hfc_ons,threshold= 2.5, smooth=None, pre_avg=25, post_avg=25, pre_max=1, post_max=1)
     # print the number of onsets detected
     print("Number of onsets detected with HFC algorithm:", len(peaks))
     
@@ -86,7 +86,7 @@ def hfc_ons_detect(gt_onsets, file_name, out_dir):
     # Extract the time values for each frame
     seconds = frames * hop_length / sr
     #correction of the interonsets interval 
-    Hfc_onsets = double_onsets_correction(Hfc_onsets, gt_onsets, correction= 0.020)
+    #Hfc_onsets = double_onsets_correction(Hfc_onsets, gt_onsets, correction= 0.020)
     print("Number of onsets detected with HFC algorithm after correction:", len(Hfc_onsets))
 
     # Save onsets to a text file
@@ -124,7 +124,7 @@ def tpd_ons_detect(gt_onsets,file_name, out_dir):
     alpha = 0.95
     # Apply thresholding on the phase deviation function
     phase_ons_fn[phase_ons_fn < alpha] = 0
-    # Apply thresholding and peak picking
+    # Apply thresholding and peak picking  # threshold= 0.95, smooth=None, pre_avg= 0, post_avg= 0 , pre_max= 10, post_max = 10
     peaks = madmom.features.onsets.peak_picking(phase_ons_fn, threshold= 0.95, smooth=None, pre_avg= 0, post_avg= 0 , pre_max= 10, post_max = 10)
 
     print("Number of onsets detected with TPD algorithm:", len(peaks))
@@ -174,7 +174,7 @@ def nwpd_ons_detect(gt_onsets, file_name, out_dir):
     # Compute normalized weighted phase deviation using madmom
     nwpd_ons_fn = madmom.features.onsets.normalized_weighted_phase_deviation(madmom_spec, epsilon=2.220446049250313e-16)
 
-    # Applying the peak picking function to count number of onsets
+    # Applying the peak picking function to count number of onsets # threshold= 0.92, smooth=None, pre_avg=0, post_avg=0, pre_max=30, post_max=30
     peaks = madmom.features.onsets.peak_picking(nwpd_ons_fn, threshold=0.92, smooth=None, pre_avg=0, post_avg=0, pre_max=30, post_max=30)
     
 
@@ -228,7 +228,7 @@ def rcd_ons_detect(gt_onsets,file_name, out_dir):
     # Compute rectified complex domain onsets using madmom
     rcd_ons_fn = madmom.features.onsets.rectified_complex_domain(madmom_spec, diff_frames=None)
 
-    # Applying the peak picking function with the current parameter values
+    # Applying the peak picking function with the current parameter values  thr= 50, smooth= None, pre_avg=25, post_avg=25, pre_max=10, post_max=10
     peaks = madmom.features.onsets.peak_picking(rcd_ons_fn, threshold= 50, smooth= None, pre_avg=25, post_avg=25, pre_max=10, post_max=10)
     # Compute the values for each frame
     frames= np.arange(0, len(rcd_ons_fn))
@@ -270,7 +270,7 @@ def superflux_ons_detect(gt_onsets,file_name, out_dir):
     # Create the spectrogram
     S = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=2048 * 2, hop_length=1024 // 2, window=0.12, fmin=2050, fmax=6000, n_mels=15)
     # detect onsets through spectral flux
-    odf_sf = librosa.onset.onset_strength(y=y, sr=sr, hop_length=1024 // 2, lag=5, max_size=50)
+    odf_sf = librosa.onset.onset_strength(S=librosa.power_to_db(S, ref=np.max), sr=sr, hop_length=1024 // 2, lag=5, max_size=50)
     # detect onsets through superflux
     onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=sr, hop_length=1024 // 2, units='time')
     #set hop length for conversion in seconds
@@ -290,7 +290,7 @@ def superflux_ons_detect(gt_onsets,file_name, out_dir):
     # print the number of onsets detected
     print("Number of onsets detected with Superflux algorithm:", len(onset_sf))
     # correction of the interonsets interval
-    onset_sf = double_onsets_correction(onset_sf, gt_onsets, correction= 0.020)
+    #onset_sf = double_onsets_correction(onset_sf, gt_onsets, correction= 0.020)
     print("Number of onsets detected with Superflux algorithm after correction:", len(onset_sf))
 
     # Save onsets to a text file
