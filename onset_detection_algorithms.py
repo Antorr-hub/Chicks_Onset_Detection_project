@@ -24,31 +24,7 @@ from utils import visualize_onsets
 
 
 
-#######################** ALGORITHMS**#############################################
-###################################################################################
-#
-# #  Compute filtering of onset detection function
-def double_onsets_correction(onsets_predicted, gt_onsets, correction= 0.020):    
-    # Calculate interonsets difference
-    gt_onsets = np.array(gt_onsets, dtype=float)
 
-    # Calculate the difference between consecutive onsets
-    differences = np.diff(onsets_predicted)
-
-    # Create a list to add the filtered onset and add a first value
-
-    filtered_onsets = [onsets_predicted[0]]  #Add the first onset
-
-    # Subtract all the onsets which are less than fixed threshold in time
-    for i, diff in enumerate(differences):
-      if diff >= correction:
-      # keep the onset if the difference is more than the given selected time
-        filtered_onsets.append(onsets_predicted[i + 1])
-        #print the number of onsets predicted after correction
-    return filtered_onsets
-      
-############################################################################################
-############################################################################################
 
 
 
@@ -56,7 +32,7 @@ def double_onsets_correction(onsets_predicted, gt_onsets, correction= 0.020):
 #######################°°°HIGH FREQUENCY CONTENT°°°##########################################
 ############################################################################################
 # Define a function to run High Frequency Content algorithm for ODT
-def hfc_ons_detect(gt_onsets, file_name, out_dir):
+def high_frequency_content_onset_detect(gt_onsets, file_name, out_dir):
     print(f"Processing {file_name}...")
     # create variable to save onsets
     Hfc_onsets = None
