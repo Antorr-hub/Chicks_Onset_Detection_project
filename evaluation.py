@@ -95,7 +95,7 @@ def get_reference_onsets(file_txt):
             first_value = float(columns[0])
             gt_onsets.append(first_value) 
     assert gt_onsets, "File cannot be read!"
-    return gt_onsets
+    return np.ndarray(gt_onsets)
 
 
 
@@ -118,3 +118,7 @@ def compute_weighted_average(scores_list, n_events_list):
     weights_list = [n_events / total_events for n_events in n_events_list]
     return np.average(scores_list, weights=weights_list)
 
+
+
+
+# def save_evaluation_summary():   TODO function to save the Scores adn global averaged scored in a csv file

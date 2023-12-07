@@ -2,7 +2,39 @@ import os
 import numpy as np
 import librosa
 import madmom
+import glob
 
+
+
+def apply_onset_detection_algorithm_batch_files(audio_folder, algorithm, file_name, save_results, **kwargs):
+    """Apply onset detection algorithm to all files in a folder.
+
+    Args:
+        folder (str): Path to the folder.
+        algorithm (function): Onset detection algorithm.
+        save_results (str): Path to the output directory.
+        **kwargs: Additional keyword arguments for the onset detection algorithm.
+    """
+    # Create the output directory if it does not exist
+    # if not os.path.exists(out_dir):
+    #     os.mkdir(out_dir)
+
+    # Get all wavfiles in the folder
+    files = glob.glob(os.path.join(audio_folder, "*.wav"))
+
+    # Apply the onset detection algorithm to all files in the folder
+    for file in files:
+        # Get the file name
+        file_name = os.path.join(audio_folder, file)
+        # Apply the onset detection algorithm
+        predictions_seconds = algorithm(file_name, **kwargs)
+        if save_results:
+
+
+
+    
+
+    
 
 
 def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=12, spec_fmin=1800, spec_fmax=6500, 
@@ -24,16 +56,16 @@ def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=1
     Returns:
         list: Onsets in seconds.
     '''
-    Hfc_onsets = None
+
     spec_mdm = madmom.audio.spectrogram.FilteredSpectrogram(file_name,num_bands=spec_num_bands, fmin=spec_fmin , fmax=spec_fmax, fref=spec_fref, norm_filters=True, unique_filters=True)
     # Compute onset based on High frequency content with madmom
     hfc_ons = madmom.features.onsets.high_frequency_content(spec_mdm)
     # Applying the peak picking function to count number of onsets
     peaks = madmom.features.onsets.peak_picking(hfc_ons,threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
 
-    Hfc_onsets =[(peak * hop_length / sr ) for peak in peaks ]    
+    hfc_onsets_seconds =[(peak * hop_length / sr ) for peak in peaks ]    
 
-    return Hfc_onsets
+    return np.ndarray(hfc_onsets_seconds)
 
 
 

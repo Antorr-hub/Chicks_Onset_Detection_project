@@ -16,25 +16,21 @@ import evaluation as eval
 
 audiofile = '/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/chick41_d0.wav'
 save_predictions_path = './example_results/'
-if os.path.exists(save_predictions_path) == False:
+if not os.path.exists(save_predictions_path):
     os.mkdir(save_predictions_path)
     
-predictions_in_seconds = onset_detectors.high_frequency_content(audiofile, hop_length=441, sr=44100, 
-                                                                             num_bands=12, fmin=1800, fmax=6500, fref=2500, 
-                                                                             norm_filters=True, unique_filters=True,
-                                                                             threshold= 2.5, smooth=None, pre_avg=25, 
-                                                                             post_avg=25, pre_max=1, post_max=1 )      #using the default parameters!
+
+predictions_in_seconds = onset_detectors.high_frequency_content(audiofile)      #using the default parameters! because they are defined in the function we do not need to write them here!
 
 # save prediction to file
 predictions_seconds_df = pd.DataFrame(predictions_in_seconds, columns=['onset_seconds'])
-predictions_seconds_df.to_csv(os.path.join(save_predictions_path, audiofile +'_HFCpredictions.csv', index=False))
+predictions_seconds_df.to_csv(os.path.join(save_predictions_path, audiofile[:,-4] +'_HFCpredictions.csv', index=False))
 
 
 # ##evaluate
 # get ground truth onsets
 gt_onsets = eval.get_reference_onsets(audiofile.replace('.wav', '.txt'))
-
-scores = mir_eval.onset.evaluate(gt_onsets, predictions_seconds_df, window=0.05)
+scores = mir_eval.onset.evaluate(gt_onsets, predictions_in_seconds, window=0.05)
 
 
 # visualise
