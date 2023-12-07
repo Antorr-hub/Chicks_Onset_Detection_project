@@ -1,79 +1,48 @@
-#Library used for our study
-import numpy as np
-import IPython
-import pandas as pd
-from scipy.io import wavfile
-import soundfile as sf
-import scipy, matplotlib.pyplot as plt, IPython.display as ipd
-import librosa, librosa.display
-#import maad
-import madmom
 import os
-import glob
-#from madmom.audio.signal import HOP_SIZE
-#from madmom.features import onsets
-
-import matplotlib.pyplot as plt
-import urllib.request
-
-from itertools import product
-import io
-import requests
-from utils import visualize_onsets
+import numpy as np
+import librosa
+import madmom
 
 
 
-
-
-
-
-
-############################################################################################
-#######################°°°HIGH FREQUENCY CONTENT°°°##########################################
-############################################################################################
-# Define a function to run High Frequency Content algorithm for ODT
-def high_frequency_content_onset_detect(gt_onsets, file_name, out_dir):
-    print(f"Processing {file_name}...")
-    # create variable to save onsets
+def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=12, spec_fmin=1800, spec_fmax=6500, 
+                           spec_fref=2500, pp_threshold= 2.5, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=1, pp_post_max=1 ):
+    '''Compute the onsets using the high frequency content algorithm with madmom.
+    Args:
+        file_name (str): Path to the audio file.
+        hop_length (int): Hop length in samples.
+        sr (int): Sample rate.
+        spec_num_bands (int): Number of filter bands.
+        spec_fmin (int): Minimum frequency.
+        spec_fmax (int): Maximum frequency.
+        spec_fref (int): Reference frequency.
+        pp_threshold (float): Threshold for peak picking.
+        pp_pre_avg (int): Number of frames to average before peak.
+        pp_post_avg (int): Number of frames to average after peak.
+        pp_pre_max (int): Number of frames to search for local maximum before peak.
+        pp_post_max (int): Number of frames to search for local maximum after peak.
+    Returns:
+        list: Onsets in seconds.
+    '''
     Hfc_onsets = None
-    # hop length  for this madmom spectrogram representation is
-    hop_length = 441
-    # the sample rate for the madmom spectrigram representation is
-    sr= 44100
-    # Create the filtered spectrogram
-    spec_mdm = madmom.audio.spectrogram.FilteredSpectrogram(file_name,num_bands=12, fmin=1800, fmax=6500, fref=2500, norm_filters=True, unique_filters=True)
-
+    spec_mdm = madmom.audio.spectrogram.FilteredSpectrogram(file_name,num_bands=spec_num_bands, fmin=spec_fmin , fmax=spec_fmax, fref=spec_fref, norm_filters=True, unique_filters=True)
     # Compute onset based on High frequency content with madmom
     hfc_ons = madmom.features.onsets.high_frequency_content(spec_mdm)
     # Applying the peak picking function to count number of onsets
-    peaks = madmom.features.onsets.peak_picking(hfc_ons,threshold= 2.5, smooth=None, pre_avg=25, post_avg=25, pre_max=1, post_max=1)
-    # print the number of onsets detected
-    print("Number of onsets detected with HFC algorithm:", len(peaks))
-    
-    #adjust frames according to the High frequency content function to represent accordingly the plot
-    frames = np.arange(0, len(hfc_ons))  
+    peaks = madmom.features.onsets.peak_picking(hfc_ons,threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
 
-    # Convert in seconds my onsets
     Hfc_onsets =[(peak * hop_length / sr ) for peak in peaks ]    
-    
-    # Convert in float the ground truth onsets
-    gt_onsets = [float(onsets) for onsets in gt_onsets]
 
-    # Extract the time values for each frame
-    seconds = frames * hop_length / sr
-    #correction of the interonsets interval 
-    #Hfc_onsets = double_onsets_correction(Hfc_onsets, gt_onsets, correction= 0.020)
-    print("Number of onsets detected with HFC algorithm after correction:", len(Hfc_onsets))
+    return Hfc_onsets
 
-    # Save onsets to a text file
-    fname_sans_path = os.path.basename(file_name)
-    output_file = os.path.join(out_dir, f"HFC_onsets_{fname_sans_path.split('.wav')[0]}.txt")
-    with open(output_file, "w") as file:
-        file.write("\n".join(map(lambda x: str(float(x)), Hfc_onsets))) 
-    return Hfc_onsets, output_file ,hfc_ons, seconds  
 
-############################################################################################
-############################################################################################ 
+
+
+
+
+#  TODO: Modyfy the remaining functions to follow the same structure as the HFC function #############################
+
+
 
 
 

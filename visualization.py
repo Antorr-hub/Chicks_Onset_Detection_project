@@ -5,6 +5,16 @@ import matplotlib.pyplot as plt
 
 
 def visualize_onsets(gt_onsets, predicted_onsets, seconds, onset_function, file_name, plot_dir, algo_name):   # TODO REVIEW FUNCTION! 
+    """Visualize the onsets and save the plot.
+
+    Args:
+        gt_onsets (list): List of ground truth onsets.
+        predicted_onsets (list): List of predicted onsets.
+        seconds (list): List of seconds.
+        onset_function (list): List of onset function values.
+        file_name (str): File name.
+        plot_dir (str): Path to the plot directory.
+    """
     plt.figure(figsize=(100, 5))
 
     plt.figure(figsize=(100,5))
