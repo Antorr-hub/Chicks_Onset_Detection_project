@@ -95,7 +95,7 @@ def get_reference_onsets(file_txt):
             first_value = float(columns[0])
             gt_onsets.append(first_value) 
     assert gt_onsets, "File cannot be read!"
-    return np.ndarray(gt_onsets)
+    return np.array(gt_onsets)
 
 
 

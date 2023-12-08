@@ -24,7 +24,7 @@ Metrics
 '''
 
 import collections
-from . import util
+from .. import util
 import warnings
 
 
