@@ -14,8 +14,8 @@ import evaluation as eval
 
 
 
-audiofile = '/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/chick41_d0.wav'
-save_predictions_path = './example_results/'
+audiofile = "C:\\Users\\anton\Data_experiment\\Data\\Training_set\\chick41_d0.wav"
+save_predictions_path = r'./example_results/'
 if not os.path.exists(save_predictions_path):
     os.mkdir(save_predictions_path)
     
@@ -24,7 +24,7 @@ predictions_in_seconds = onset_detectors.high_frequency_content(audiofile)      
 
 # save prediction to file
 predictions_seconds_df = pd.DataFrame(predictions_in_seconds, columns=['onset_seconds'])
-predictions_seconds_df.to_csv(os.path.join(save_predictions_path, os.path.basename(audiofile)[:-4] +'_HFCpredictions.csv'), index=False)
+predictions_seconds_df.to_csv(os.path.join(save_predictions_path, os.path.basename(audiofile[:-4]) +'_HFCpredictions.csv'), index=False)
 
 
 # ##evaluate
@@ -38,8 +38,8 @@ scores = mir_eval.onset.evaluate(gt_onsets, predictions_in_seconds, window=0.05)
 # TODO: Get TP, FP, FN:
 
 
-
-# TODO: visualise
+print(f"Scores: {scores}")
+# visualise
 
 
 
