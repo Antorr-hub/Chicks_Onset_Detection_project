@@ -14,7 +14,9 @@ import evaluation as eval
 
 
 
-audiofile = "C:\\Users\\anton\Data_experiment\\Data\\Training_set\\chick41_d0.wav"
+# audiofile = "C:\\Users\\anton\Data_experiment\\Data\\Training_set\\chick41_d0.wav"
+audiofile = "/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/chick41_d0.wav"
+
 save_predictions_path = r'./example_results/'
 if not os.path.exists(save_predictions_path):
     os.mkdir(save_predictions_path)

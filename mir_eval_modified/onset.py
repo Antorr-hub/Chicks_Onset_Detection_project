@@ -22,14 +22,21 @@ Metrics
   based on the number of esimated onsets which are sufficiently close to
   reference onsets.
 '''
-
+from . import util_mod
 import collections
-from .. import util
+import numpy as np
 import warnings
 
 
 # The maximum allowable beat time
 MAX_TIME = 30000.
+
+
+
+
+
+
+
 
 
 def validate(reference_onsets, estimated_onsets):
@@ -50,7 +57,14 @@ def validate(reference_onsets, estimated_onsets):
     if estimated_onsets.size == 0:
         warnings.warn("Estimated onsets are empty.")
     for onsets in [reference_onsets, estimated_onsets]:
-        util.validate_events(onsets, MAX_TIME)
+        util_mod.validate_events(onsets, MAX_TIME)
+
+
+
+
+
+
+
 
 
 def f_measure(reference_onsets, estimated_onsets, window=.05):
@@ -90,12 +104,25 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
         return 0., 0., 0.
     # Compute the best-case matching between reference and estimated onset
     # locations
-    matching = util.match_events(reference_onsets, estimated_onsets, window)
+    matching = util_mod.match_events(reference_onsets, estimated_onsets, window)
+    
+    matched_reference = list(list(zip(*matching))[0])
+    matched_estimated = list(list(zip(*matching))[1])
+
+    ref_indexes = np.arange(len(reference_onsets))
+    est_indexes = np.arange(len(estimated_onsets))
+    unmatched_reference = set(ref_indexes) - set(matched_reference)
+    unmatched_estimated = set(est_indexes) - set(matched_estimated)
+
+    TP = estimated_onsets[matched_estimated]  
+    FP = estimated_onsets[list(unmatched_estimated)]
+    FN = reference_onsets[list(unmatched_reference)]
+
 
     precision = float(len(matching))/len(estimated_onsets)
     recall = float(len(matching))/len(reference_onsets)
     # Compute F-measure and return all statistics
-    return util.f_measure(precision, recall), precision, recall
+    return util_mod.f_measure(precision, recall), precision, recall,TP, FP, FN
 
 
 def evaluate(reference_onsets, estimated_onsets, **kwargs):
@@ -130,7 +157,11 @@ def evaluate(reference_onsets, estimated_onsets, **kwargs):
 
     (scores['F-measure'],
      scores['Precision'],
-     scores['Recall']) = util.filter_kwargs(f_measure, reference_onsets,
+     scores['Recall']) = util_mod.filter_kwargs(f_measure, reference_onsets,
                                             estimated_onsets, **kwargs)
+    
+    # (scores['F-measure'],
+    #  scores['Precision'],
+    #  scores['Recall']) = f_measure(reference_onsets, estimated_onsets, **kwargs)
 
     return scores
