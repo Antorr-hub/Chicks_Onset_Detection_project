@@ -24,18 +24,26 @@ predictions_in_seconds = onset_detectors.high_frequency_content(audiofile)      
 
 # save prediction to file
 predictions_seconds_df = pd.DataFrame(predictions_in_seconds, columns=['onset_seconds'])
-predictions_seconds_df.to_csv(os.path.join(save_predictions_path, audiofile[:,-4] +'_HFCpredictions.csv', index=False))
+predictions_seconds_df.to_csv(os.path.join(save_predictions_path, os.path.basename(audiofile)[:-4] +'_HFCpredictions.csv'), index=False)
 
 
 # ##evaluate
 # get ground truth onsets
 gt_onsets = eval.get_reference_onsets(audiofile.replace('.wav', '.txt'))
+
+
+# compute individual scores Fmeasure, precision, recall 
 scores = mir_eval.onset.evaluate(gt_onsets, predictions_in_seconds, window=0.05)
 
+# TODO: Get TP, FP, FN:
 
-# visualise
 
 
+# TODO: visualise
+
+
+
+print('done')
 
 
 
