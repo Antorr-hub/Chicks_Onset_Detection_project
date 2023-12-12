@@ -14,7 +14,9 @@ import evaluation as eval
 
 
 
-audiofile = "C:\\Users\\anton\Data_experiment\\Data\\Training_set\\chick41_d0.wav"
+# audiofile = "C:\\Users\\anton\Data_experiment\\Data\\Training_set\\chick41_d0.wav"
+audiofile = "/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/chick41_d0.wav"
+
 save_predictions_path = r'./example_results/'
 if not os.path.exists(save_predictions_path):
     os.mkdir(save_predictions_path)
@@ -30,12 +32,20 @@ predictions_seconds_df.to_csv(os.path.join(save_predictions_path, os.path.basena
 # ##evaluate
 # get ground truth onsets
 gt_onsets = eval.get_reference_onsets(audiofile.replace('.wav', '.txt'))
+
+
+# compute individual scores Fmeasure, precision, recall 
 scores = mir_eval.onset.evaluate(gt_onsets, predictions_in_seconds, window=0.05)
+
+# TODO: Get TP, FP, FN:
+
 
 print(f"Scores: {scores}")
 # visualise
 
 
+
+print('done')
 
 
 
