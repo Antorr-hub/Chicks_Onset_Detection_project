@@ -7,45 +7,45 @@ import glob
 
 
   
-def superflux(file_name, mel_spec_hop_length=512, mel_spec_n_fft=4096, spec_num_bands=12, spec_fmin=1800, spec_fmax=6500, 
-                           spec_fref=2500, pp_threshold= 2.5, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=1, pp_post_max=1 ): #hoplength = 1024//2 , n_fft=2048*2, window=0.12, fmin=2050, fmax=6000, n_mels=152
-    # create variable to save onsets
-    onset_sf = None
-    #Load my file
-    y, sr = librosa.load(file_name) # what are the default parameters for librosa.load?
-    # Create the spectrogram
-    S = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=, hop_length = mel_spec_hop_length, window=0.12, fmin=2050, fmax=6000, n_mels=15)
-    # detect onsets through spectral flux
-    odf_sf = librosa.onset.onset_strength(S=librosa.power_to_db(S, ref=np.max), sr=sr, hop_length=1024 // 2, lag=5, max_size=50)
-    # detect onsets through superflux
-    onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=sr, hop_length=1024 // 2, units='time')
-    #set hop length for conversion in seconds
-    hop_length=1024 // 2
-    # Compute the frames for the onset function
-    frames = np.arange(0, len(odf_sf))
-    # Calculate the time values for each frame
-    seconds = frames * hop_length / sr
+# def superflux(file_name, mel_spec_hop_length=512, mel_spec_n_fft=4096, spec_num_bands=12, spec_fmin=1800, spec_fmax=6500, 
+#                            spec_fref=2500, pp_threshold= 2.5, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=1, pp_post_max=1 ): #hoplength = 1024//2 , n_fft=2048*2, window=0.12, fmin=2050, fmax=6000, n_mels=152
+#     # create variable to save onsets
+#     onset_sf = None
+#     #Load my file
+#     y, sr = librosa.load(file_name) # what are the default parameters for librosa.load?
+#     # Create the spectrogram
+#     S = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=, hop_length = mel_spec_hop_length, window=0.12, fmin=2050, fmax=6000, n_mels=15)
+#     # detect onsets through spectral flux
+#     odf_sf = librosa.onset.onset_strength(S=librosa.power_to_db(S, ref=np.max), sr=sr, hop_length=1024 // 2, lag=5, max_size=50)
+#     # detect onsets through superflux
+#     onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=sr, hop_length=1024 // 2, units='time')
+#     #set hop length for conversion in seconds
+#     hop_length=1024 // 2
+#     # Compute the frames for the onset function
+#     frames = np.arange(0, len(odf_sf))
+#     # Calculate the time values for each frame
+#     seconds = frames * hop_length / sr
 
-    # import the ground truth onsets
-    # gt_onsets = [onset for onset in gt_onsets if onset.replace('.', '', 1).isdigit()]
-    # Convert in float the ground truth onsets
-    gt_onsets = [float(onsets) for onsets in gt_onsets]
+#     # import the ground truth onsets
+#     # gt_onsets = [onset for onset in gt_onsets if onset.replace('.', '', 1).isdigit()]
+#     # Convert in float the ground truth onsets
+#     gt_onsets = [float(onsets) for onsets in gt_onsets]
+ 
+#     # Convert onset times from seconds to frame indices
+#     onset_frames = np.asarray(onset_sf * sr / hop_length) # Superflux in librosa gives onsets in seconds
+#     # print the number of onsets detected
+#     print("Number of onsets detected with Superflux algorithm:", len(onset_sf))
+#     # correction of the interonsets interval
+#     #onset_sf = double_onsets_correction(onset_sf, gt_onsets, correction= 0.020)
+#     print("Number of onsets detected with Superflux algorithm after correction:", len(onset_sf))
 
-    # Convert onset times from seconds to frame indices
-    onset_frames = np.asarray(onset_sf * sr / hop_length) # Superflux in librosa gives onsets in seconds
-    # print the number of onsets detected
-    print("Number of onsets detected with Superflux algorithm:", len(onset_sf))
-    # correction of the interonsets interval
-    #onset_sf = double_onsets_correction(onset_sf, gt_onsets, correction= 0.020)
-    print("Number of onsets detected with Superflux algorithm after correction:", len(onset_sf))
-
-    # Save onsets to a text file
-    fname_sans_path = os.path.basename(file_name)
-    output_file = os.path.join(out_dir, f"Superflux_onsets_{fname_sans_path.split('.wav')[0]}.txt")
-    with open(output_file, "w") as file:
-        file.write("\n".join(map(str, onset_sf))) 
-    print(f"The file has been saved in the output folder{out_dir} as {output_file}")    
-    return onset_sf, output_file, odf_sf, seconds 
+#     # Save onsets to a text file
+#     fname_sans_path = os.path.basename(file_name)
+#     output_file = os.path.join(out_dir, f"Superflux_onsets_{fname_sans_path.split('.wav')[0]}.txt")
+#     with open(output_file, "w") as file:
+#         file.write("\n".join(map(str, onset_sf))) 
+#     print(f"The file has been saved in the output folder{out_dir} as {output_file}")    
+#     return onset_sf, output_file, odf_sf, seconds 
   
 ############################################################################################
 ############################################################################################
