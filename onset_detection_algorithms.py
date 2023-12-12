@@ -13,7 +13,7 @@ import glob
 
 
 def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=12, spec_fmin=1800, spec_fmax=6500, 
-                           spec_fref=2500, pp_threshold= 2.5, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=1, pp_post_max=1 ):
+                           spec_fref=2500, pp_threshold= 2.5, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=1, pp_post_max=1, visualise_activation=False ):
     
     '''Compute the onsets using the high frequency content algorithm with madmom.
     Args:
@@ -40,8 +40,10 @@ def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=1
     peaks = madmom.features.onsets.peak_picking(hfc_ons,threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
 
     hfc_onsets_seconds =[(peak * hop_length / sr ) for peak in peaks ]    
-
-    return np.array(hfc_onsets_seconds)
+    if visualise_activation:
+        return np.array(hfc_onsets_seconds), hfc_ons
+    else:
+        return np.array(hfc_onsets_seconds)
 
 
 
@@ -215,7 +217,7 @@ def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_win
 #######################°°°DOUBLE THRESHOLD FUNCTION°°°######################################
 ############################################################################################
 # double threshold approach to identify chicks' calls onsets
-def double_threshold(file_name, sr= 44100, hop_length=441, spec_n_fft=2048, spec_window=0.12, spec_fmin=2050, spec_fmax=6000):
+def double_threshold(file_name, sr= 44100, hop_length=441, spec_n_fft=2048, spec_window=0.12):
     '''Compute the onsets using the double threshold algorithm with librosa
     Args:
         file_name (str): Path to the audio file.
