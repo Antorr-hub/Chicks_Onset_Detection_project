@@ -14,19 +14,39 @@ import evaluation as eval
 
 
 
-# audiofile = "C:\\Users\\anton\Data_experiment\\Data\\Training_set\\chick41_d0.wav"
-audiofile = "/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/chick41_d0.wav"
+audiofile = "C:\\Users\\anton\Data_experiment\\Data\\Training_set\\chick41_d0.wav"
+#audiofile = "/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/chick41_d0.wav"
 
 save_predictions_path = r'./example_results/'
 if not os.path.exists(save_predictions_path):
     os.mkdir(save_predictions_path)
     
 
-predictions_in_seconds = onset_detectors.high_frequency_content(audiofile)      #using the default parameters! because they are defined in the function we do not need to write them here!
+HFCpredictions_in_seconds = onset_detectors.high_frequency_content(audiofile)      #using the default parameters! because they are defined in the function we do not need to write them here!
 
+TPDpredictions_in_seconds = onset_detectors.thresholded_phase_deviation(audiofile) #using the default parameters! because they are defined in the function we do not need to write them here!
+
+NWPDpredictions_in_seconds = onset_detectors.normalized_weighted_phase_deviation(audiofile) #using the default parameters! because they are defined in the function we do not need to write them here!
+
+RCDpredictions_in_seconds = onset_detectors.rectified_complex_domain(audiofile) #using the default parameters! because they are defined in the function we do not need to write them here!
+
+Spf_predictions_in_seconds = onset_detectors.superflux(audiofile) #using the default parameters! because they are defined in the function we do not need to write them here!
+
+Dbt_predictions_in_seconds = onset_detectors.double_threshold(audiofile) #using the default parameters! because they are defined in the function we do not need to write them here!
 # save prediction to file
-predictions_seconds_df = pd.DataFrame(predictions_in_seconds, columns=['onset_seconds'])
-predictions_seconds_df.to_csv(os.path.join(save_predictions_path, os.path.basename(audiofile[:-4]) +'_HFCpredictions.csv'), index=False)
+# predictions_seconds_df = pd.DataFrame(predictions_in_seconds, columns=['onset_seconds'])
+# predictions_seconds_df.to_csv(os.path.join(save_predictions_path, os.path.basename(audiofile[:-4]) +'_HFCpredictions.csv'), index=False)
+print(f"predictions_in_seconds: {HFCpredictions_in_seconds[:10]}")
+
+print(f"predictions_in_seconds: {TPDpredictions_in_seconds[:10]}")
+
+print(f"predictions_in_seconds: {NWPDpredictions_in_seconds[:10]}")
+
+print(f"predictions_in_seconds: {RCDpredictions_in_seconds[:10]}")
+
+print(f"predictions_in_seconds: {Spf_predictions_in_seconds[:10]}")
+
+print(f"predictions_in_seconds: {Dbt_predictions_in_seconds[:10]}")
 
 
 # ##evaluate
@@ -35,12 +55,35 @@ gt_onsets = eval.get_reference_onsets(audiofile.replace('.wav', '.txt'))
 
 
 # compute individual scores Fmeasure, precision, recall 
-scores = mir_eval.onset.evaluate(gt_onsets, predictions_in_seconds, window=0.05)
+scores_hfc = mir_eval.onset.evaluate(gt_onsets, HFCpredictions_in_seconds, window=0.05)
+
+scores_tpd = mir_eval.onset.evaluate(gt_onsets, TPDpredictions_in_seconds, window=0.05)
+
+scores_nwpd = mir_eval.onset.evaluate(gt_onsets, NWPDpredictions_in_seconds, window=0.05)
+
+scores_rcd = mir_eval.onset.evaluate(gt_onsets, RCDpredictions_in_seconds, window=0.05)
+
+scores_spf = mir_eval.onset.evaluate(gt_onsets, Spf_predictions_in_seconds, window=0.05)
+
+scores_dbt = mir_eval.onset.evaluate(gt_onsets, Dbt_predictions_in_seconds, window=0.05)
+
+
 
 # TODO: Get TP, FP, FN:
 
 
-print(f"Scores: {scores}")
+print(f"Scores: {scores_hfc}")
+
+print(f"Scores: {scores_tpd}")
+
+print(f"Scores: {scores_nwpd}")
+
+print(f"Scores: {scores_rcd}")
+
+print(f"Scores: {scores_spf}")
+
+print(f"Scores: {scores_dbt}")
+
 # visualise
 
 
