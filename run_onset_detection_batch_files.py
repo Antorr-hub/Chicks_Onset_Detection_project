@@ -71,7 +71,7 @@ for file in tqdm(list_files):
     
  ###############Evaluation for High Frequency Content   
     # for alg in list_algorithms:
-    HFC_results_folder = os.path.join(save_evaluation_results_path, chick_folder, 'HFC_deafult_parameters_window0.5')
+    HFC_results_folder = os.path.join(save_evaluation_results_path, chick_folder, 'HFC_default_parameters_window0.5')
     if not os.path.exists(HFC_results_folder):
         os.mkdir(HFC_results_folder)
 
@@ -88,20 +88,20 @@ for file in tqdm(list_files):
     FP_pd.to_csv(os.path.join(HFC_results_folder,'_FP.csv'), index=False)
     FN_pd = pd.DataFrame(FN, columns=['FN'])
     FN_pd.to_csv(os.path.join(HFC_results_folder, '_FN.csv'), index=False)
-    with open(os.path.join(HFC_results_folder,'_evaluation_results.json'), 'w') as fp:
+    with open(os.path.join(HFC_results_folder, f"{os.path.basename(file)[:-4]}_HFC_evaluation_results.json"), 'w') as fp:
         json.dump(evaluation_results, fp)
 
-    visualize_activation_and_gt(plot_dir=HFC_results_folder,file_name=os.path.basename(file), onset_detection_funtion_name='HFC', gt_onsets=gt_onsets, activation=HFCpredictions_in_frames, hop_length=441, sr=44100)
+    visualize_activation_and_gt(plot_dir=HFC_results_folder,file_name=os.path.basename(file), onset_detection_funtion_name='HFC', gt_onsets=gt_onsets, activation= HFCpredictions_in_frames, hop_length=441, sr=44100)
 
 
 
 ###############Evaluation for Thresholded Phase Deviation
 
-    TPD_results_folder = os.path.join(save_evaluation_results_path, chick_folder, 'TPD_deafult_parameters_window0.5')
+    TPD_results_folder = os.path.join(save_evaluation_results_path, chick_folder, 'TPD_default_parameters_window0.5')
     if not os.path.exists(TPD_results_folder):
         os.mkdir(TPD_results_folder)
 
-    tpd_pred_scnd = onset_detectors.thresholded_phase_deviation(file)
+    tpd_pred_scnd, TPDpredictions_in_frames = onset_detectors.thresholded_phase_deviation(file, visualise_activation=True)
     Fscore, precision, recall, TP, FP, FN = onset.f_measure(gt_onsets, tpd_pred_scnd, window=evaluation_window)
     individual_fscore_list_TPD.append(Fscore)
     individual_precision_list_TPD.append(precision)
@@ -114,18 +114,20 @@ for file in tqdm(list_files):
     FP_pd.to_csv(os.path.join(TPD_results_folder, '_FP.csv'), index=False)
     FN_pd = pd.DataFrame(FN, columns=['FN'])
     FN_pd.to_csv(os.path.join(TPD_results_folder,'_FN.csv'), index=False)
-    with open(os.path.join(TPD_results_folder, '_evaluation_results.json'), 'w') as fp:
+    with open(os.path.join(TPD_results_folder,f"{os.path.basename(file)[:-4]}_TPD_evaluation_results.json"), 'w') as fp:
         json.dump(evaluation_results, fp)
+
+    visualize_activation_and_gt(plot_dir=TPD_results_folder,file_name=os.path.basename(file), onset_detection_funtion_name='TPD', gt_onsets=gt_onsets, activation= TPDpredictions_in_frames, hop_length=441, sr=44100)    
 
 
 
 ###############Evaluation for Normalized Weighted Phase Deviation
 
-    NWPD_results_folder = os.path.join(save_evaluation_results_path, chick_folder, 'NWPD_deafult_parameters_window0.5')
+    NWPD_results_folder = os.path.join(save_evaluation_results_path, chick_folder, 'NWPD_default_parameters_window0.5')
     if not os.path.exists(NWPD_results_folder):
         os.mkdir(NWPD_results_folder)
 
-    nwpd_pred_scnd = onset_detectors.normalized_weighted_phase_deviation(file)
+    nwpd_pred_scnd, NWPDpredictions_in_frames = onset_detectors.normalized_weighted_phase_deviation(file, visualise_activation=True)
     Fscore, precision, recall, TP, FP, FN = onset.f_measure(gt_onsets, nwpd_pred_scnd, window=evaluation_window)
     individual_fscore_list_NWPD.append(Fscore)
     individual_precision_list_NWPD.append(precision)
@@ -138,15 +140,24 @@ for file in tqdm(list_files):
     FP_pd.to_csv(os.path.join(NWPD_results_folder, '_FP.csv'), index=False)
     FN_pd = pd.DataFrame(FN, columns=['FN'])
     FN_pd.to_csv(os.path.join(NWPD_results_folder, '_FN.csv'), index=False)
-    with open(os.path.join(NWPD_results_folder,'_evaluation_results.json'), 'w') as fp:
+    with open(os.path.join(NWPD_results_folder,f"{os.path.basename(file)[:-4]}_NWPD_evaluation_results.json"), 'w') as fp:
         json.dump(evaluation_results, fp)
+
+    visualize_activation_and_gt(plot_dir=NWPD_results_folder,file_name=os.path.basename(file), onset_detection_funtion_name='NWPD', gt_onsets=gt_onsets, activation= NWPDpredictions_in_frames, hop_length=441, sr=44100)    
+
+
+
+
+
+
+
 
 ###############Evaluation for Rectified Complex Domain
     RCD_results_folder = os.path.join(save_evaluation_results_path, chick_folder, 'RCD_default_parameters_window0.5')
     if not os.path.exists(RCD_results_folder):
         os.mkdir(RCD_results_folder)
 
-    rcd_pred_scnd = onset_detectors.rectified_complex_domain(file)
+    rcd_pred_scnd, RCDpredictions_in_frames = onset_detectors.rectified_complex_domain(file, visualise_activation=True)
     Fscore, precision, recall, TP, FP, FN = onset.f_measure(gt_onsets, rcd_pred_scnd, window=evaluation_window)
     individual_fscore_list_RCD.append(Fscore)
     individual_precision_list_RCD.append(precision)
@@ -162,6 +173,13 @@ for file in tqdm(list_files):
     with open(os.path.join(RCD_results_folder, '_evaluation_results.json'), 'w') as fp:
         json.dump(evaluation_results, fp)
 
+    visualize_activation_and_gt(plot_dir=RCD_results_folder,file_name=os.path.basename(file), onset_detection_funtion_name='RCD', gt_onsets=gt_onsets, activation= RCDpredictions_in_frames, hop_length=441, sr=44100)
+
+
+
+
+
+
 
 
 ###############Evaluation for Superflux
@@ -169,7 +187,8 @@ for file in tqdm(list_files):
     if not os.path.exists(Superflux_results_folder):
         os.mkdir(Superflux_results_folder)
 
-    spf_pred_scnd = onset_detectors.superflux(file)
+
+    spf_pred_scnd, Superfluxpredictions_in_frames, spf_sr = onset_detectors.superflux(file, visualise_activation=True)
     Fscore, precision, recall, TP, FP, FN = onset.f_measure(gt_onsets, spf_pred_scnd, window=evaluation_window)
     individual_fscore_list_Superflux.append(Fscore)
     individual_precision_list_Superflux.append(precision)
@@ -182,8 +201,10 @@ for file in tqdm(list_files):
     FP_pd.to_csv(os.path.join(Superflux_results_folder, '_FP.csv'), index=False)
     FN_pd = pd.DataFrame(FN, columns=['FN'])
     FN_pd.to_csv(os.path.join(Superflux_results_folder, '_FN.csv'), index=False)
-    with open(os.path.join(Superflux_results_folder, '_evaluation_results.json'), 'w') as fp:
+    with open(os.path.join(Superflux_results_folder, f"{os.path.basename(file)[:-4]}_evaluation_results.json"), 'w') as fp:
         json.dump(evaluation_results, fp)
+
+    visualize_activation_and_gt(plot_dir=Superflux_results_folder,file_name=os.path.basename(file), onset_detection_funtion_name='Superflux', gt_onsets=gt_onsets, activation= Superfluxpredictions_in_frames, hop_length= 1024 // 2, sr= spf_sr)    
 
 
 ####Evaluation for Double Threshold
@@ -203,7 +224,7 @@ for file in tqdm(list_files):
     FP_pd.to_csv(os.path.join(DBT_results_folder ,'_FP.csv'), index=False)
     FN_pd = pd.DataFrame(FN, columns=['FN'])
     FN_pd.to_csv(os.path.join(DBT_results_folder ,'_FN.csv'), index=False)
-    with open(os.path.join(DBT_results_folder ,'_evaluation_results.json'), 'w') as fp:
+    with open(os.path.join(DBT_results_folder , f"{os.path.basename(file)[:-4]}_evaluation_results.json"), 'w') as fp:
         json.dump(evaluation_results, fp)
   
     # save prediction to file

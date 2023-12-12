@@ -213,15 +213,15 @@ def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_win
         list: Onsets in seconds.
         '''
     #Load my file
-    y, sr = librosa.load(file_name)
+    y, spf_sr = librosa.load(file_name)
     # Create the spectrogram
-    S = librosa.feature.melspectrogram(y=y, sr=sr, n_fft= spec_n_fft, hop_length= spec_hop_length, window= spec_window, fmin= spec_fmin, fmax=spec_fmax, n_mels= spec_n_mels)
+    S = librosa.feature.melspectrogram(y=y, sr=spf_sr, n_fft= spec_n_fft, hop_length= spec_hop_length, window= spec_window, fmin= spec_fmin, fmax=spec_fmax, n_mels= spec_n_mels)
     # detect onsets through spectral flux
-    odf_sf = librosa.onset.onset_strength(S=librosa.power_to_db(S, ref=np.max), sr=sr, hop_length= spec_hop_length, lag= spec_lag, max_size= spec_max_size)
+    odf_sf = librosa.onset.onset_strength(S=librosa.power_to_db(S, ref=np.max), sr=spf_sr, hop_length= spec_hop_length, lag= spec_lag, max_size= spec_max_size)
     # detect onsets through superflux
-    onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=sr, hop_length= spec_hop_length, units='time')
+    onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=spf_sr, hop_length= spec_hop_length, units='time')
     if visualise_activation:
-        return np.array(onset_sf), odf_sf
+        return np.array(onset_sf), odf_sf, spf_sr
     else:
         return np.array(onset_sf)
   
