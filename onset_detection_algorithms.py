@@ -6,9 +6,11 @@ import glob
 
 
 
-  
 
-############################################################################################
+
+
+
+#######################°°°HIGH FREQUENCY CONTENT°°°#########################################
 ############################################################################################
 
 
@@ -50,13 +52,14 @@ def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=1
 
 
 
-############################################################################################
+
+
 #######################°°°THRESHOLDED PHASE DEVIATION°°°####################################
 ############################################################################################
 
 # Define a function to run Thresholded phase deviation for ODT  
-def thresholded_phase_deviation(file_name, hop_length=441, sr=44100, spec_num_bands=64, spec_fmin=1800, spec_fmax=6000, 
-                   spec_fref=2500, spec_alpha= 0.95 ,pp_threshold= 0.95, pp_pre_avg=0, pp_post_avg=0, pp_pre_max=10, pp_post_max=10):
+def thresholded_phase_deviation(file_name, hop_length=441, sr=44100, spec_num_bands=64, spec_fmin=1800, spec_fmax=6000,spec_fref=2500,spec_alpha= 0.95,
+                                pp_threshold= 0.95, pp_pre_avg=0, pp_post_avg=0, pp_pre_max=10, pp_post_max=10, visualise_activation=False):
     
     '''Compute the onsets using the thresholded phase deviation algorithm with madmom.
     Args:
@@ -90,21 +93,24 @@ def thresholded_phase_deviation(file_name, hop_length=441, sr=44100, spec_num_ba
     # Apply thresholding and peak picking  on the phase deviation function
     peaks = madmom.features.onsets.peak_picking(phase_ons_fn, threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
     # Convert in seconds my onsets
-    tpd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks] 
-
-    return np.array(tpd_onsets_seconds)
-
-
-
-############################################################################################
-############################################################################################
-
+    tpd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks]
+    if visualise_activation:
+        return np.array(tpd_onsets_seconds), phase_ons_fn
+    else:
+        return np.array(tpd_onsets_seconds)
 
 ############################################################################################
+
+
+
+
+
+
 #######################°°°NORMALISED WEIGHTED PHASE DEVIATION°°°############################
 ############################################################################################
-# Define a function to run Normalised weighted phase deviation (NWPD) for ODT
-def normalized_weighted_phase_deviation(file_name, hop_length=441, sr=44100, pp_threshold= 0.92, pp_pre_avg=0, pp_post_avg=0, pp_pre_max=30, pp_post_max=30):  
+# Define a function to run Normalised weighted phase deviation for ODT
+def normalized_weighted_phase_deviation(file_name, hop_length=441, sr=44100, pp_threshold= 0.92, pp_pre_avg=0, pp_post_avg=0, 
+                                        pp_pre_max=30, pp_post_max=30, visualise_activation=False):  
 
     '''Compute the onsets using the normalized weighted phase deviation algorithm with madmom.
     Args:
@@ -130,20 +136,25 @@ def normalized_weighted_phase_deviation(file_name, hop_length=441, sr=44100, pp_
     peaks = madmom.features.onsets.peak_picking(nwpd_ons_fn, threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
     
     # Convert in seconds my onsets
-    nwpd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks] 
-      
-    return np.array(nwpd_onsets_seconds)
+    nwpd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks]
+    if visualise_activation:
+        return np.array(nwpd_onsets_seconds), nwpd_ons_fn
+    else:
+        return np.array(nwpd_onsets_seconds)
 
 ############################################################################################
-############################################################################################
 
 
 
-############################################################################################
+
+
+
+
 #######################°°°RECTIFIED COMPLEX DOMAIN°°°#######################################
 ############################################################################################
 # Define a function to run Rectified complex domain (RCD) for ODT
-def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 50, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=10, pp_post_max=10): 
+def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 50, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=10, 
+                            pp_post_max=10, visualise_activation=False): 
 
     '''Compute the onsets using the rectified complex domain algorithm with madmom.
     Args:
@@ -167,22 +178,26 @@ def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 
     # Applying the peak picking function with the current parameter values 
     peaks = madmom.features.onsets.peak_picking(rcd_ons_fn, threshold= pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
     # Convert in seconds my onsets
-    rcd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks] 
-  
-    return np.array(rcd_onsets_seconds)
+    rcd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks]
+    if visualise_activation:
+        return np.array(rcd_onsets_seconds), rcd_ons_fn
+    else:
+        return np.array(rcd_onsets_seconds)
 
 ############################################################################################
-############################################################################################
 
 
 
 
-############################################################################################
+
+
+
+
 #######################°°°SUPERFLUX°°°######################################################
 ############################################################################################
 # Define a function to run the Superflux algorithm for ODT
 def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_window=0.12, spec_fmin=2050, spec_fmax=6000,
-                         spec_n_mels=15, spec_lag=5, spec_max_size=50):
+                         spec_n_mels=15, spec_lag=5, spec_max_size=50, visualise_activation=False):
     '''Compute the onsets using the superflux algorithm with librosa
     Args:
         file_name (str): Path to the audio file.
@@ -205,15 +220,20 @@ def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_win
     odf_sf = librosa.onset.onset_strength(S=librosa.power_to_db(S, ref=np.max), sr=sr, hop_length= spec_hop_length, lag= spec_lag, max_size= spec_max_size)
     # detect onsets through superflux
     onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=sr, hop_length= spec_hop_length, units='time')
-
-    return np.array(onset_sf)
+    if visualise_activation:
+        return np.array(onset_sf), odf_sf
+    else:
+        return np.array(onset_sf)
   
 ############################################################################################
-############################################################################################
 
 
 
-############################################################################################
+
+
+
+
+
 #######################°°°DOUBLE THRESHOLD FUNCTION°°°######################################
 ############################################################################################
 # double threshold approach to identify chicks' calls onsets
@@ -268,5 +288,5 @@ def double_threshold(file_name, sr= 44100, hop_length=441, spec_n_fft=2048, spec
         
     return np.array(onset_times)
 
-############################################################################################
+
 ############################################################################################
