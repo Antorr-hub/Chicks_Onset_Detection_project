@@ -1,5 +1,6 @@
 
 import numpy as np
+from mir_eval_modified import onset
 
 def double_onset_correction(onsets_predicted, gt_onsets, correction= 0.020):
     '''Correct double onsets by removing onsets which are less than a given threshold in time.
@@ -121,4 +122,29 @@ def compute_weighted_average(scores_list, n_events_list):
 
 
 
-# def save_evaluation_summary():   TODO function to save the Scores adn global averaged scored in a csv file
+
+def compute_precision_recall_curve(gt_onsets, list_peak_picking_thresholds, list_predictions_with_thresholds, eval_window=0.1):
+    """Compute precision-recall curve for a given onset detection function.
+
+    Args:
+        gt_onsets (list): List of ground truth onsets.
+        peak_picking_thresholds (list): List of peak picking thresholds.
+        list_predictions_with_thresholds (list): List of predictions with thresholds.
+
+    Returns:
+        tuple: Tuple of precision, recall and thresholds.
+
+    """
+    # Compute precision and recall for each threshold
+    precision = []
+    recall = []
+    
+    for i, threshold in enumerate(list_peak_picking_thresholds):
+        fscore, prec, rec, TP, FP, FN = onset.evaluate(gt_onsets, list_predictions_with_thresholds[i], window=eval_window)
+        precision.append(prec)
+        recall.append(rec)
+    
+
+    return precision, recall, list_peak_picking_thresholds
+
+
