@@ -22,7 +22,7 @@ gt_onsets = myeval.get_reference_onsets(audiofile.replace('.wav', '.txt'))
 
 Fscore, precision, recall, TP, FP, FN = onset.f_measure(gt_onsets, predictions_in_seconds, window=0.05)
 
-# save LISts of TP, FP, FN for visualisation in sonic visualiser
+# save Lists of TP, FP, FN for visualisation in sonic visualiser
 evaluation_results = { 'audiofilename' : os.path.basename(audiofile), 'Algorithm':'HFC',  'f_score':Fscore, 'precision':precision, 'recall': recall}
 TP_pd = pd.DataFrame(TP, columns=['TP'])
 TP_pd.to_csv(os.path.join(save_evaluation_results_path, os.path.basename(load_predictions_path[:-4]) +'_TP.csv'), index=False)
