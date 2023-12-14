@@ -43,8 +43,8 @@ def visualize_activation_and_gt(plot_dir,file_name, onset_detection_funtion_name
 
 
 
-def plot_precision_recall_thresholds(list_thresholds, list_precisions, list_recalls):
-    """Plot the precision-recall curve.
+def plot_precision_recall_thresholds(list_thresholds, list_precisions, list_recalls, save_file_name = 'Precision_Recall_vs_thresholds_curve.png'):
+    """Plot the precision and recall vs peak-picking threshold.
 
     Args:
         list_thresholds (list): List of peak picking thresholds.
@@ -56,14 +56,15 @@ def plot_precision_recall_thresholds(list_thresholds, list_precisions, list_reca
     plt.plot(list_thresholds, list_recalls, label="Recall")
     plt.xlabel("Threshold")
     plt.ylabel("Precision/Recall")
-    plt.title("Precision-Recall Curve")
+    plt.title("Precision and Recall vs peak-picking Threshold")
     plt.legend()
-    plt.show()
+    # plt.show()
+    plt.savefig(save_file_name)
     # TODO save figure
     return
 
 
-def plot_precision_recall_curve(list_precisions, list_recalls):
+def plot_precision_recall_curve(list_precisions, list_recalls, save_file_name = 'Precision_Recall_Curve.png'):
     """Plot the precision-recall curve.
 
     Args:
@@ -75,6 +76,7 @@ def plot_precision_recall_curve(list_precisions, list_recalls):
     plt.xlabel("Recall")
     plt.ylabel("Precision")
     plt.title("Precision-Recall Curve")
-    plt.show()
+    # plt.show()
+    plt.savefig(save_file_name)
     # TODO save figure
     return
