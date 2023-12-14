@@ -59,6 +59,7 @@ def plot_precision_recall_thresholds(list_thresholds, list_precisions, list_reca
     plt.title("Precision-Recall Curve")
     plt.legend()
     plt.show()
+    # TODO save figure
     return
 
 
@@ -75,4 +76,5 @@ def plot_precision_recall_curve(list_precisions, list_recalls):
     plt.ylabel("Precision")
     plt.title("Precision-Recall Curve")
     plt.show()
+    # TODO save figure
     return

@@ -101,10 +101,13 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     validate(reference_onsets, estimated_onsets)
     # If either list is empty, return 0s
     if reference_onsets.size == 0 or estimated_onsets.size == 0:
-        return 0., 0., 0.
+        return 0., 0., 0., [], estimated_onsets, reference_onsets
     # Compute the best-case matching between reference and estimated onset
     # locations
     matching = util_mod.match_events(reference_onsets, estimated_onsets, window)
+
+    if len(matching) == 0:
+        return 0., 0., 0., [], estimated_onsets, reference_onsets
     
     matched_reference = list(list(zip(*matching))[0])
     matched_estimated = list(list(zip(*matching))[1])
@@ -118,50 +121,51 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     FP = estimated_onsets[list(unmatched_estimated)]
     FN = reference_onsets[list(unmatched_reference)]
 
-
     precision = float(len(matching))/len(estimated_onsets)
     recall = float(len(matching))/len(reference_onsets)
+
     # Compute F-measure and return all statistics
     return util_mod.f_measure(precision, recall), precision, recall,TP, FP, FN
-
-
-def evaluate(reference_onsets, estimated_onsets, **kwargs):
-    """Compute all metrics for the given reference and estimated annotations.
-
-    Examples
-    --------
-    >>> reference_onsets = mir_eval.io.load_events('reference.txt')
-    >>> estimated_onsets = mir_eval.io.load_events('estimated.txt')
-    >>> scores = mir_eval.onset.evaluate(reference_onsets,
-    ...                                  estimated_onsets)
-
-    Parameters
-    ----------
-    reference_onsets : np.ndarray
-        reference onset locations, in seconds
-    estimated_onsets : np.ndarray
-        estimated onset locations, in seconds
-    kwargs
-        Additional keyword arguments which will be passed to the
-        appropriate metric or preprocessing functions.
-
-    Returns
-    -------
-    scores : dict
-        Dictionary of scores, where the key is the metric name (str) and
-        the value is the (float) score achieved.
-
-    """
-    # Compute all metrics
-    scores = collections.OrderedDict()
-
-    (scores['F-measure'],
-     scores['Precision'],
-     scores['Recall']) = util_mod.filter_kwargs(f_measure, reference_onsets,
-                                            estimated_onsets, **kwargs)
     
-    # (scores['F-measure'],
-    #  scores['Precision'],
-    #  scores['Recall']) = f_measure(reference_onsets, estimated_onsets, **kwargs)
 
-    return scores
+
+# def evaluate(reference_onsets, estimated_onsets, **kwargs):
+#     """Compute all metrics for the given reference and estimated annotations.
+
+#     Examples
+#     --------
+#     >>> reference_onsets = mir_eval.io.load_events('reference.txt')
+#     >>> estimated_onsets = mir_eval.io.load_events('estimated.txt')
+#     >>> scores = mir_eval.onset.evaluate(reference_onsets,
+#     ...                                  estimated_onsets)
+
+#     Parameters
+#     ----------
+#     reference_onsets : np.ndarray
+#         reference onset locations, in seconds
+#     estimated_onsets : np.ndarray
+#         estimated onset locations, in seconds
+#     kwargs
+#         Additional keyword arguments which will be passed to the
+#         appropriate metric or preprocessing functions.
+
+#     Returns
+#     -------
+#     scores : dict
+#         Dictionary of scores, where the key is the metric name (str) and
+#         the value is the (float) score achieved.
+
+#     """
+#     # Compute all metrics
+#     scores = collections.OrderedDict()
+
+#     (scores['F-measure'],
+#      scores['Precision'],
+#      scores['Recall']) = util_mod.filter_kwargs(f_measure, reference_onsets,
+#                                             estimated_onsets, **kwargs)
+    
+#     # (scores['F-measure'],
+#     #  scores['Precision'],
+#     #  scores['Recall']) = f_measure(reference_onsets, estimated_onsets, **kwargs)
+
+#     return scores

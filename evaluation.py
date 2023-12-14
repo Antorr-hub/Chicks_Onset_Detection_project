@@ -123,28 +123,23 @@ def compute_weighted_average(scores_list, n_events_list):
 
 
 
-def compute_precision_recall_curve(gt_onsets, list_peak_picking_thresholds, list_predictions_with_thresholds, eval_window=0.1):
-    """Compute precision-recall curve for a given onset detection function.
+def compute_precision_recall_curve(onset_detector_function, data_folder, list_peak_picking_thresholds, eval_window=0.1):
 
-    Args:
-        gt_onsets (list): List of ground truth onsets.
-        peak_picking_thresholds (list): List of peak picking thresholds.
-        list_predictions_with_thresholds (list): List of predictions with thresholds.
+    audiofiles = glob.glob(data_folder + '/*.wav')
 
-    Returns:
-        tuple: Tuple of precision, recall and thresholds.
-
-    """
     # Compute precision and recall for each threshold
-    precision = []
-    recall = []
+    av_precision = []
+    av_recall = []
     
     for i, threshold in enumerate(list_peak_picking_thresholds):
-        fscore, prec, rec, TP, FP, FN = onset.evaluate(gt_onsets, list_predictions_with_thresholds[i], window=eval_window)
-        precision.append(prec)
-        recall.append(rec)
+
+        for file in audiofiles:
+            gt_onsets = get_reference_onsets(file.replace('.wav', '.txt'))
+            _, prec, rec, _,_,_ = onset.evaluate(gt_onsets, threshold, window=eval_window)
+            precision.append(prec)
+            recall.append(rec)
     
 
-    return precision, recall, list_peak_picking_thresholds
+    return precision, recall
 
 
