@@ -1,5 +1,7 @@
 
 import numpy as np
+from mir_eval_modified import onset
+import glob
 
 def double_onset_correction(onsets_predicted, gt_onsets, correction= 0.020):
     '''Correct double onsets by removing onsets which are less than a given threshold in time.
@@ -121,4 +123,40 @@ def compute_weighted_average(scores_list, n_events_list):
 
 
 
-# def save_evaluation_summary():   TODO function to save the Scores adn global averaged scored in a csv file
+
+def compute_precision_recall_curve(onset_detector_function, data_folder, list_peak_picking_thresholds, eval_window=0.1, **kwargs):
+
+    audiofiles = glob.glob(data_folder + '/*.wav')
+
+    # Compute precision and recall for each threshold
+    individual_precision = []
+    indicidual_recall = []
+    n_events_list = []
+    av_precision_list = []
+    av_recall_list = []
+    for i, th in enumerate(list_peak_picking_thresholds):
+
+        for file in audiofiles:
+
+            gt_onsets = get_reference_onsets(file.replace('.wav', '.txt'))
+            n_events_list.append(len(gt_onsets))
+
+
+            predictions_scnd = onset_detector_function(file, pp_threshold =th) # TODO modify how we call this function to allow passing parameters contained in the **kwargs
+            
+            
+            
+            _, prec, rec, _,_,_ = onset.f_measure(gt_onsets, predictions_scnd, window=eval_window)
+            individual_precision.append(prec)
+            indicidual_recall.append(rec)
+
+
+        av_precision = compute_weighted_average(individual_precision, n_events_list)
+        av_recall = compute_weighted_average(indicidual_recall, n_events_list)
+        av_precision_list.append(av_precision)
+        av_recall_list.append(av_recall)
+    
+
+    return av_precision_list, av_recall_list
+
+

@@ -42,19 +42,41 @@ def visualize_activation_and_gt(plot_dir,file_name, onset_detection_funtion_name
     return
 
 
-# def generate_annotation_files_for_sonic_visualiser(audiofilename, lists_onsets_to_print, lists_labels_to_print, annotations_file_path ):
 
-#     # lists_onsets_to_print = [gt_onsets, predicted_onsets_HFC, predicted_onsets_TPD]
+def plot_precision_recall_thresholds(list_thresholds, list_precisions, list_recalls, save_file_name = 'Precision_Recall_vs_thresholds_curve.png'):
+    """Plot the precision and recall vs peak-picking threshold.
+
+    Args:
+        list_thresholds (list): List of peak picking thresholds.
+        list_precisions (list): List of precisions.
+        list_recalls (list): List of recalls.
+    """
+    plt.figure(figsize=(10, 5))
+    plt.plot(list_thresholds, list_precisions, label="Precision")
+    plt.plot(list_thresholds, list_recalls, label="Recall")
+    plt.xlabel("Threshold")
+    plt.ylabel("Precision/Recall")
+    plt.title("Precision and Recall vs peak-picking Threshold")
+    plt.legend()
+    # plt.show()
+    plt.savefig(save_file_name)
+    # TODO save figure
+    return
 
 
-#     # generate single file in the format:
+def plot_precision_recall_curve(list_precisions, list_recalls, save_file_name = 'Precision_Recall_Curve.png'):
+    """Plot the precision-recall curve.
 
-#     # Time, label,
-#     # 0.0, GT
-#     # 0.02, predicted_HFC
-#     # 0.01, predicted_TPD
-
-#     # annotations_file = 
-
-
-#     return annotations_file
+    Args:
+        list_precisions (list): List of precisions.
+        list_recalls (list): List of recalls.
+    """
+    plt.figure(figsize=(10, 5))
+    plt.plot(list_recalls, list_precisions)
+    plt.xlabel("Recall")
+    plt.ylabel("Precision")
+    plt.title("Precision-Recall Curve")
+    # plt.show()
+    plt.savefig(save_file_name)
+    # TODO save figure
+    return

@@ -20,39 +20,39 @@ if not os.path.exists(save_evaluation_results_path):
     os.mkdir(save_evaluation_results_path)
     
 
-evaluation_window = 0.05
-
+evaluation_window = 0.5
+n_events_list = []
 list_files = glob.glob(os.path.join(audio_folder, "*.wav"))
 
 individual_fscore_list_HFC = []
 individual_precision_list_HFC = []
 individual_recall_list_HFC = []
-n_events_list = []
+
 
 individual_fscore_list_TPD = []
 individual_precision_list_TPD = []
 individual_recall_list_TPD = []
-n_events_list = []
+
 
 individual_fscore_list_NWPD = []
 individual_precision_list_NWPD = []
 individual_recall_list_NWPD = []
-n_events_list = []
+
 
 individual_fscore_list_RCD = []
 individual_precision_list_RCD = []
 individual_recall_list_RCD = []
-n_events_list = []
+
 
 individual_fscore_list_Superflux = []
 individual_precision_list_Superflux = []
 individual_recall_list_Superflux = []
-n_events_list = []
+
 
 individual_fscore_list_DBT = []
 individual_precision_list_DBT = []
 individual_recall_list_DBT = []
-n_events_list = []
+
 
 
 

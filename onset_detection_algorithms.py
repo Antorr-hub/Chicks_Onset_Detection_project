@@ -59,7 +59,7 @@ def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=1
 
 # Define a function to run Thresholded phase deviation for ODT  
 def thresholded_phase_deviation(file_name, hop_length=441, sr=44100, spec_num_bands=64, spec_fmin=1800, spec_fmax=6000,spec_fref=2500,spec_alpha= 0.95,
-                                pp_threshold= 0.95, pp_pre_avg=0, pp_post_avg=0, pp_pre_max=10, pp_post_max=10, visualise_activation=False):
+                                pp_threshold=0.95, pp_pre_avg=0, pp_post_avg=0, pp_pre_max=10, pp_post_max=10, visualise_activation=False):
     
     '''Compute the onsets using the thresholded phase deviation algorithm with madmom.
     Args:
@@ -92,12 +92,10 @@ def thresholded_phase_deviation(file_name, hop_length=441, sr=44100, spec_num_ba
     phase_ons_fn[phase_ons_fn < alpha] = 0
     # Apply thresholding and peak picking  on the phase deviation function
     peaks = madmom.features.onsets.peak_picking(phase_ons_fn, threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
-    # Convert in seconds my onsets
-    tpd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks]
+    tpd_onsets_seconds= np.array([(peak * hop_length / sr ) for peak in peaks])
     if visualise_activation:
-        return np.array(tpd_onsets_seconds), phase_ons_fn
-    else:
-        return np.array(tpd_onsets_seconds)
+        return np.array(tpd_onsets_seconds), phase_ons_fn    
+    return tpd_onsets_seconds
 
 ############################################################################################
 
