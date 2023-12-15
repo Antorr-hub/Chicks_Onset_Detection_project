@@ -1,5 +1,4 @@
 import os
-
 import glob
 import onset_detection_algorithms as onset_detectors
 from tqdm import tqdm
@@ -13,10 +12,10 @@ from visualization import visualize_activation_and_gt
 
 
 #audio_folder = '/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/'
-audio_folder = 'C:\\Users\\anton\\Data_experiment\\Data\\Training_set\\'
+audio_folder = 'C:\\Users\\anton\\Data_experiment\\Data\\Testing_set\\'
 #save_predictions_path = './Results_normalised_data_default_parameters/'
 
-save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Results_data_default_parameters'
+save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Results_data_default_parameters\Testing'
 if not os.path.exists(save_evaluation_results_path):
     os.mkdir(save_evaluation_results_path)
     
