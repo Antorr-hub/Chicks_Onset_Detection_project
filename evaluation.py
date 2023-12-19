@@ -3,6 +3,26 @@ import numpy as np
 from mir_eval_modified import onset
 import glob
 
+
+
+def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, predicted_events, predicted_events_frames, hop_length=441, sr=44100): # TODO MODIFY THIS TO WORK WITH SUPERFLUX!!
+ 
+
+    # Filter onsets within the specified time window
+    new_gt_events =  gt_events[(gt_events >= exp_start) & (gt_events <= exp_end)]
+    new_predicted_events = predicted_events[(predicted_events >= exp_start) & (predicted_events <= exp_end)]
+
+    start_exp_frames = int(exp_start * sr / hop_length)
+    end_exp_frames = int(exp_end * sr / hop_length)
+
+    predicted_events_frames[ :start_exp_frames] =0
+    predicted_events_frames[end_exp_frames:] =0
+    predicted_events_frames = predicted_events_frames[:end_exp_frames+50]
+    new_predicted_events_frames = predicted_events_frames 
+
+      
+    return  new_gt_events, new_predicted_events, new_predicted_events_frames
+
 def double_onset_correction(onsets_predicted, gt_onsets, correction= 0.020):
     '''Correct double onsets by removing onsets which are less than a given threshold in time.
     Args:

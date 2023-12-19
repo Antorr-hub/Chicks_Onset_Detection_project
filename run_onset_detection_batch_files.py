@@ -12,10 +12,10 @@ from visualization import visualize_activation_and_gt
 
 
 #audio_folder = '/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/'
-audio_folder = 'C:\\Users\\anton\\Data_experiment\\Data\\Testing_set\\'
+audio_folder = 'C:\\Users\\anton\\Data_experiment\\Data\\Training_set\\'
 #save_predictions_path = './Results_normalised_data_default_parameters/'
 
-save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Results_data_default_parameters\Testing'
+save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Results_data_default_parameters\Training'
 if not os.path.exists(save_evaluation_results_path):
     os.mkdir(save_evaluation_results_path)
     
@@ -75,6 +75,7 @@ for file in tqdm(list_files):
         os.mkdir(HFC_results_folder)
 
     hfc_pred_scnd,  HFCpredictions_in_frames = onset_detectors.high_frequency_content(file, visualise_activation=True)
+    gt_onsets, hfc_pred_scnd, HFCpredictions_in_frames = discard_events_outside_experiment_window(exp_start, exp_end, gt_onsets, hfc_pred_scnd, HFCpredictions_in_frames, hop_length, sr)
     Fscore, precision, recall, TP, FP, FN = onset.f_measure(gt_onsets, hfc_pred_scnd, window=evaluation_window)
     individual_fscore_list_HFC.append(Fscore)
     individual_precision_list_HFC.append(precision)

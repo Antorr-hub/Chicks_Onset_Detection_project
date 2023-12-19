@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def visualize_activation_and_gt(plot_dir,file_name, onset_detection_funtion_name, gt_onsets, activation, hop_length=441, sr=44100):  
+def visualize_activation_and_gt(plot_dir,file_name, onset_detection_funtion_name, gt_onsets, activation, start_exp, end_exp, hop_length=441, sr=44100):  
     """Visualize the onsets and save the plot.
 
     Args:
@@ -31,6 +31,10 @@ def visualize_activation_and_gt(plot_dir,file_name, onset_detection_funtion_name
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude")
     plt.title("Onsets Visualization")
+    #visualize experiment begining and end
+    plt.axvline(x=start_exp, alpha=0.5, color="k")
+    plt.axvline(x=end_exp, alpha=0.5, color="k")
+
 
     # Construct the output file path with the specified file name
     plot_filename = os.path.join(plot_dir, f"{file_name.split('.wav')[0]}_onset_plot_{onset_detection_funtion_name}_.png")

@@ -37,13 +37,13 @@ def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=1
 
     spec_mdm = madmom.audio.spectrogram.FilteredSpectrogram(file_name,num_bands=spec_num_bands, fmin=spec_fmin , fmax=spec_fmax, fref=spec_fref, norm_filters=True, unique_filters=True)
     # Compute onset based on High frequency content with madmom
-    hfc_ons = madmom.features.onsets.high_frequency_content(spec_mdm)
+    activation = madmom.features.onsets.high_frequency_content(spec_mdm)
     # Applying the peak picking function to count number of onsets
-    peaks = madmom.features.onsets.peak_picking(hfc_ons,threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
+    peaks = madmom.features.onsets.peak_picking(activation,threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
 
     hfc_onsets_seconds =[(peak * hop_length / sr ) for peak in peaks ]    
     if visualise_activation:
-        return np.array(hfc_onsets_seconds), hfc_ons
+        return np.array(hfc_onsets_seconds), activation
     else:
         return np.array(hfc_onsets_seconds)
 

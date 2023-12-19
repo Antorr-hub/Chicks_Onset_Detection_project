@@ -26,16 +26,10 @@ from . import util_mod
 import collections
 import numpy as np
 import warnings
-
+import pandas as pd
 
 # The maximum allowable beat time
 MAX_TIME = 30000.
-
-
-
-
-
-
 
 
 
@@ -58,12 +52,6 @@ def validate(reference_onsets, estimated_onsets):
         warnings.warn("Estimated onsets are empty.")
     for onsets in [reference_onsets, estimated_onsets]:
         util_mod.validate_events(onsets, MAX_TIME)
-
-
-
-
-
-
 
 
 
@@ -98,7 +86,7 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
         (# true positives)/(# true positives + # false negatives)
 
     """
-    validate(reference_onsets, estimated_onsets)
+    validate(reference_onsets, estimated_onsets, start_time=0, end_time=0)
     # If either list is empty, return 0s
     if reference_onsets.size == 0 or estimated_onsets.size == 0:
         return 0., 0., 0., [], estimated_onsets, reference_onsets

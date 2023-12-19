@@ -15,6 +15,7 @@ from visualization import visualize_activation_and_gt
 
 
 audiofile = "C:\\Users\\anton\Data_experiment\\Data\\Training_set\\chick41_d0.wav"
+metadata = pd.read_csv("C:\\Users\\anton\\High_quality_dataset\\high_quality_dataset_metadata.csv")
 #audiofile = "/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/chick41_d0.wav"
 
 save_predictions_path = r'./example_results/'
@@ -22,7 +23,7 @@ if not os.path.exists(save_predictions_path):
     os.mkdir(save_predictions_path)
     
 
-HFCpredictions_in_seconds, HFCpredictions_in_frames = onset_detectors.high_frequency_content(audiofile, visualise_activation=True)      #using the default parameters! because they are defined in the function we do not need to write them here!
+HFCpredictions_in_seconds, activation_frames = onset_detectors.high_frequency_content(audiofile, visualise_activation=True)      #using the default parameters! because they are defined in the function we do not need to write them here!
 
 # TPDpredictions_in_seconds = onset_detectors.thresholded_phase_deviation(audiofile) #using the default parameters! because they are defined in the function we do not need to write them here!
 
@@ -52,10 +53,14 @@ print(f"predictions_in_seconds: {HFCpredictions_in_seconds[:10]}")
 # ##evaluate
 # get ground truth onsets
 gt_onsets = eval.get_reference_onsets(audiofile.replace('.wav', '.txt'))
-
-
+exp_start = metadata[metadata['Filename'] == os.path.basename(audiofile)[:-4]]['Start_experiment_sec'].values[0]   
+exp_end = metadata[metadata['Filename'] == os.path.basename(audiofile)[:-4]]['End_experiment_sec'].values[0]
+gt_onsets, HFCpredictions_in_seconds, activation_frames = eval.discard_events_outside_experiment_window(exp_start,
+                                                                                                     exp_end, gt_onsets, HFCpredictions_in_seconds, 
+                                                                                                     activation_frames)
+    
 # compute individual scores Fmeasure, precision, recall 
-scores_hfc = mir_eval.onset.evaluate(gt_onsets, HFCpredictions_in_seconds, window=0.05)
+scores_hfc = mir_eval.onset.evaluate(gt_onsets, HFCpredictions_in_seconds, window=0.1)
 
 # scores_tpd = mir_eval.onset.evaluate(gt_onsets, TPDpredictions_in_seconds, window=0.05)
 
@@ -84,7 +89,8 @@ print(f"Scores: {scores_hfc}")
 
 # visualise
 
-visualize_activation_and_gt(plot_dir=save_predictions_path,file_name=os.path.basename(audiofile), onset_detection_funtion_name='HFC', gt_onsets=gt_onsets, activation=HFCpredictions_in_frames, hop_length=441, sr=44100)
+visualize_activation_and_gt(plot_dir=save_predictions_path,file_name=os.path.basename(audiofile), onset_detection_funtion_name='HFC',
+                             gt_onsets=gt_onsets, activation=activation_frames, start_exp=exp_start, end_exp=exp_end ,hop_length=441, sr=44100)
 
 
 
