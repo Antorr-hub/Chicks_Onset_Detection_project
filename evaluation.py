@@ -5,7 +5,7 @@ import glob
 
 
 
-def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, predicted_events, predicted_events_frames, hop_length=441, sr=44100): # TODO MODIFY THIS TO WORK WITH SUPERFLUX!!
+def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, predicted_events, predicted_events_frames, hop_length, sr): # TODO MODIFY THIS TO WORK WITH SUPERFLUX!!
  
 
     # Filter onsets within the specified time window

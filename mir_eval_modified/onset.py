@@ -86,7 +86,7 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
         (# true positives)/(# true positives + # false negatives)
 
     """
-    validate(reference_onsets, estimated_onsets, start_time=0, end_time=0)
+    validate(reference_onsets, estimated_onsets)
     # If either list is empty, return 0s
     if reference_onsets.size == 0 or estimated_onsets.size == 0:
         return 0., 0., 0., [], estimated_onsets, reference_onsets
@@ -112,7 +112,11 @@ def f_measure(reference_onsets, estimated_onsets, window=.05):
     precision = float(len(matching))/len(estimated_onsets)
     recall = float(len(matching))/len(reference_onsets)
 
-    # Compute F-measure and return all statistics
+    #f_measure, precision, recall = util_mod.f_measure(precision, recall)
+
+    #return f_measure, precision, recall, TP, FP, FN
+
+
     return util_mod.f_measure(precision, recall), precision, recall,TP, FP, FN
     
 

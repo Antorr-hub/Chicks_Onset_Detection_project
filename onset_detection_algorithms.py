@@ -219,7 +219,7 @@ def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_win
     # detect onsets through superflux
     onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=spf_sr, hop_length= spec_hop_length, units='time')
     if visualise_activation:
-        return np.array(onset_sf), odf_sf, spf_sr
+        return np.array(onset_sf), odf_sf, spec_hop_length, spf_sr
     else:
         return np.array(onset_sf)
   
