@@ -90,8 +90,10 @@ def global_shift_correction(predicted_onsets, shift):
         #subtract a global shift of 0.01 ms or more  to all the predicted onsets
         if po - shift > 0: # to avoid negative onsets
             corrected_predicted_onsets.append(po - shift)
+        else:
+            continue
 
-    return corrected_predicted_onsets
+    return np.array(corrected_predicted_onsets)
 
 
 
