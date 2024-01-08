@@ -40,7 +40,7 @@ eval_window = 0.1
 
 
 
-Hfc_thresholds = np.arange(0.02, 1.3, 0.1)
+Hfc_thresholds = np.arange(0.02, 80, 0.2)  # for the grid search we have tested 1.8, 2.5, 3
 onset_detector_function = 'High_Frequency_Content'
 dataset = 'High_quality_dataset'
 precisions, recalls = eval.compute_precision_recall_curve(onset_detectors.high_frequency_content, data_folder, Hfc_thresholds, eval_window=eval_window)
@@ -51,10 +51,30 @@ vis.plot_precision_recall_curve(precisions, recalls)
            
 
 
+Rcd_thresholds = np.arange(20, 750, 10) # for the grid search we have tested 30, 50, 70
+onset_detector_function = 'Rectified_Complex_Domain'
+
+precisions, recalls = eval.compute_precision_recall_curve(onset_detectors.rectified_complex_domain, data_folder, Rcd_thresholds, eval_window= eval_window)
+
+vis.plot_precision_recall_thresholds(Rcd_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
+vis.plot_precision_recall_curve(precisions, recalls)
 
 
 
-Tpd_thresholds = np.arange(0.02, 1.3, 0.1)
+# Superflux
+Superflux_thresholds = np.arange(0.0, 1.5 , 0.05) # for the grid search we have tested delta= 0
+onset_detector_function = 'Superflux'
+precisions, recalls = eval.compute_precision_recall_curve(onset_detectors.superflux, data_folder, Superflux_thresholds, eval_window= eval_window)
+
+vis.plot_precision_recall_thresholds(Superflux_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
+vis.plot_precision_recall_curve(precisions, recalls)
+
+
+
+
+
+
+Tpd_thresholds = np.arange(0.87, 1.2, 0.05) # for the grid search we have tested 0.9, 0.95
 onset_detector_function = 'Thresholded_Phase_Deviation'
 precisions, recalls = eval.compute_precision_recall_curve(onset_detectors.thresholded_phase_deviation, data_folder, Tpd_thresholds, eval_window= eval_window)
 
@@ -67,7 +87,7 @@ vis.plot_precision_recall_curve(precisions, recalls)
 
 
 
-Nwpd_thresholds = np.arange(0.02, 1.3, 0.1)
+Nwpd_thresholds = np.arange(0.65, 1.5, 0.1) #for the grid search we have tested 0.8, 0.92, 0.95
 
 onset_detector_function = 'Normalized_Weighted_Phase_Deviation'
 precisions, recalls = eval.compute_precision_recall_curve(onset_detectors.normalized_weighted_phase_deviation, data_folder, Nwpd_thresholds, eval_window= eval_window)
@@ -80,14 +100,4 @@ vis.plot_precision_recall_curve(precisions, recalls)
 
 
 
-Rcd_thresholds = np.arange(0.02, 1.3, 0.1)
-onset_detector_function = 'Rectified_Complex_Domain'
 
-precisions, recalls = eval.compute_precision_recall_curve(onset_detectors.rectified_complex_domain, data_folder, Rcd_thresholds, eval_window= eval_window)
-
-vis.plot_precision_recall_thresholds(Rcd_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
-vis.plot_precision_recall_curve(precisions, recalls)
-
-
-
-# Superflux
