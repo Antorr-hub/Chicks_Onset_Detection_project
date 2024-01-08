@@ -195,7 +195,7 @@ def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 
 ############################################################################################
 # Define a function to run the Superflux algorithm for ODT
 def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_window=0.12, spec_fmin=2050, spec_fmax=6000,
-                         spec_n_mels=15, spec_lag=5, spec_max_size=50, visualise_activation=False):
+                         spec_n_mels=15, spec_lag=5, spec_max_size=50, visualise_activation=False, delta=0):
     '''Compute the onsets using the superflux algorithm with librosa
     Args:
         file_name (str): Path to the audio file.
@@ -217,7 +217,7 @@ def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_win
     # detect onsets through spectral flux
     odf_sf = librosa.onset.onset_strength(S=librosa.power_to_db(S, ref=np.max), sr=spf_sr, hop_length= spec_hop_length, lag= spec_lag, max_size= spec_max_size)
     # detect onsets through superflux
-    onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=spf_sr, hop_length= spec_hop_length, units='time')
+    onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=spf_sr, hop_length= spec_hop_length, units='time', delta=0)
     if visualise_activation:
         return np.array(onset_sf), odf_sf, spec_hop_length, spf_sr
     else:

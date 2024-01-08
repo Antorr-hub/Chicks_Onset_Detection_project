@@ -164,7 +164,7 @@ def compute_precision_recall_curve(onset_detector_function, data_folder, list_pe
             n_events_list.append(len(gt_onsets))
 
 
-            predictions_scnd = onset_detector_function(file, pp_threshold =th) # TODO modify how we call this function to allow passing parameters contained in the **kwargs
+            predictions_scnd = onset_detector_function(file, pp_threshold=th) # TODO modify how we call this function to allow passing parameters contained in the **kwargs
             
             
             
