@@ -209,6 +209,7 @@ def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_win
         spec_n_mels (int): Number of Mel bands.
         spec_lag (int): Lag value for computing difference.
         spec_max_size (int): Maximum size of the onset detection function.
+        delta (float): Threshold offset for mean for peak picking.
         Returns:
         list: Onsets in seconds.
         '''

@@ -2,10 +2,14 @@
 import numpy as np
 from mir_eval_modified import onset
 import glob
+import os
+import pandas as pd
 
 
 
-def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, predicted_events, predicted_events_frames, hop_length, sr): # TODO MODIFY THIS TO WORK WITH SUPERFLUX!!
+
+
+def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, predicted_events, predicted_events_frames, hop_length= 441, sr= 44100): # TODO MODIFY THIS TO WORK WITH SUPERFLUX!!
  
 
     # Filter onsets within the specified time window
@@ -146,7 +150,7 @@ def compute_weighted_average(scores_list, n_events_list):
 
 
 
-def compute_precision_recall_curve(onset_detector_function, data_folder, list_peak_picking_thresholds, eval_window=0.1, **kwargs):
+def compute_precision_recall_curve(onset_detector_function, data_folder, list_peak_picking_thresholds, exp_start, exp_end, eval_window=0.1,  hop_length= 441, sr= 44100):
 
     audiofiles = glob.glob(data_folder + '/*.wav')
 
@@ -164,9 +168,14 @@ def compute_precision_recall_curve(onset_detector_function, data_folder, list_pe
             n_events_list.append(len(gt_onsets))
 
 
-            predictions_scnd = onset_detector_function(file, pp_threshold=th) # TODO modify how we call this function to allow passing parameters contained in the **kwargs
+            predictions_scnd, predicted_events_frames = onset_detector_function(file, visualise_activation= True, pp_threshold=th, hop_length= hop_length, sr= sr)
+                        
             
             
+            gt_onsets, predictions_scnd, predicted_events_frames = discard_events_outside_experiment_window(exp_start,exp_end, 
+                                                gt_onsets, predictions_scnd, predicted_events_frames, hop_length= hop_length, sr= sr)
+
+
             
             _, prec, rec, _,_,_ = onset.f_measure(gt_onsets, predictions_scnd, window=eval_window)
             individual_precision.append(prec)
