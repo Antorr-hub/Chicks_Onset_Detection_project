@@ -55,12 +55,12 @@ fref = 2800        # These values have already been selected based on input feat
 
     
 # peak picking parameters
-threshold_range = [1, 1.8, 2.5, 3]
+threshold_range = [1.8, 2.5, 3, 3.5]  
 threshold = 1.8
-pre_avg_range =[0, 1, 3 ]
-pre_avg = 0
-post_avg_range =[0, 1, 3]
-post_avg = 0
+pre_avg_range =[20, 25, 30, 40]
+pre_avg = 25
+post_avg_range =[20, 25, 30, 40]
+post_avg = 25
 pre_max_range = [1, 2, 3]
 pre_max = 1
 post_max_range = [1, 2, 3]

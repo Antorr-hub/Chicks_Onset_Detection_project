@@ -54,7 +54,7 @@ fmax_range = [5000, 6000, 8000]
 fmax = 6000
 lag_range= [1,3,5]
 lag = 5
-max_size_range = [40, 50, 60]
+max_size_range = [50, 60, 65]
 max_size = 50
 
 # peak picking parameters
