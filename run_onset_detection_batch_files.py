@@ -49,15 +49,15 @@ Superflux_parameters= {'hop_length': 1024 // 2, 'n_fft': 2048 * 2, 'window': 0.1
 DBT_parameters= {'sr': 44100, 'hop_length': 441, 'n_fft': 2048, 'window': 0.12}
 
 # ###############################
-audio_folder = '/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/'
-# audio_folder = 'C:\\Users\\anton\\High_quality_dataset'
+#audio_folder = '/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/'
+audio_folder = 'C:\\Users\\anton\\Data_normalised\\Testing_set'
 
 
-# metadata = pd.read_csv("C:\\Users\\anton\\High_quality_dataset\\high_quality_dataset_metadata.csv")
-metadata = pd.read_csv("/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/metadata.csv")
+metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
+#metadata = pd.read_csv("/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/metadata.csv")
 
-# save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\High_quality_dataset_results'
-save_evaluation_results_path = r'/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Results/Default_parameters_evalWindow_0.1'
+save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Testing_norm_dataset_default_params_results'
+#save_evaluation_results_path = r'/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Results/Default_parameters_evalWindow_0.1'
 #######################
 
 if not os.path.exists(save_evaluation_results_path):
@@ -181,7 +181,7 @@ for file in tqdm(list_files):
     individual_precision_list_TPD.append(precision)
     individual_recall_list_TPD.append(recall)
     # save Lists of TP, FP, FN for visualisation in sonic visualiser
-    evaluation_results = { 'audiofilename' : os.path.basename(file), 'Algorithm':'Thresholded Phase Deviation',  'F_measure':Fscore, 'Precision':precision, 'Recall': recall}
+    evaluation_results = { 'audiofilename' : os.path.basename(file), 'Algorithm':'Thresholded Phase Deviation',  'F-measure':Fscore, 'Precision':precision, 'Recall': recall}
     TP_pd = pd.DataFrame(TP, columns=['TP'])
     TP_pd.to_csv(os.path.join(TPD_results_folder, f'_{chick}_TP.csv'), index=False)
     FP_pd = pd.DataFrame(FP, columns=['FP'])
@@ -382,12 +382,12 @@ global_precision_DBT_in_batch = my_eval.compute_weighted_average(individual_prec
 global_recall_DBT_in_batch = my_eval.compute_weighted_average(individual_recall_list_DBT, n_events_list)
 
 
-globals_results_dict = { 'HFC': {'fmeaseure': global_fmeasure_HFC_in_batch, 'precision': global_precision_HFC_in_batch, 'recall': global_recall_JFC_in_batch, 'parameters': HFC_parameters},
-                        'TPD': {'fmeaseure': global_f1score_TPD_in_batch, 'precision': global_precision_TPD_in_batch, 'recall': global_recall_TPD_in_batch, 'parameters': TPD_parameters},
-                        'NWPD': {'fmeaseure': global_f1score_NWPD_in_batch, 'precision': global_precision_NWPD_in_batch, 'recall': global_recall_NWPD_in_batch, 'parameters': NWPD_parameters},
-                        'RCD': {'fmeaseure': global_f1score_RCD_in_batch, 'precision': global_precision_RCD_in_batch, 'recall': global_recall_RCD_in_batch, 'parameters': RCD_parameters},
-                        'Superflux': {'fmeaseure': global_f1score_Superflux_in_batch, 'precision': global_precision_Superflux_in_batch, 'recall': global_recall_Superflux_in_batch, 'parameters': Superflux_parameters},
-                        'DBT': {'fmeaseure': global_f1score_DBT_in_batch, 'precision': global_precision_DBT_in_batch, 'recall': global_recall_DBT_in_batch, 'parameters': DBT_parameters}
+globals_results_dict = { 'HFC': {'F1-measure': global_fmeasure_HFC_in_batch, 'Precision': global_precision_HFC_in_batch, 'Recall': global_recall_JFC_in_batch, 'parameters': HFC_parameters},
+                        'TPD': {'F1-measure': global_f1score_TPD_in_batch, 'Precision': global_precision_TPD_in_batch, 'Recall': global_recall_TPD_in_batch, 'parameters': TPD_parameters},
+                        'NWPD': {'F1-measure': global_f1score_NWPD_in_batch, 'Precision': global_precision_NWPD_in_batch, 'Recall': global_recall_NWPD_in_batch, 'parameters': NWPD_parameters},
+                        'RCD': {'F1-measure': global_f1score_RCD_in_batch, 'Precision': global_precision_RCD_in_batch, 'Recall': global_recall_RCD_in_batch, 'parameters': RCD_parameters},
+                        'Superflux': {'F1-measure': global_f1score_Superflux_in_batch, 'Precision': global_precision_Superflux_in_batch, 'Recall': global_recall_Superflux_in_batch, 'parameters': Superflux_parameters},
+                        'DBT': {'F1-measure': global_f1score_DBT_in_batch, 'Precision': global_precision_DBT_in_batch, 'Recall': global_recall_DBT_in_batch, 'parameters': DBT_parameters}
                         }
 with open(os.path.join(save_evaluation_results_path, "global_evaluation_results.json"), 'w') as fp:
     json.dump(globals_results_dict, fp)
