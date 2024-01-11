@@ -10,7 +10,7 @@ import mir_eval_modified as mir_eval_new
 
 
 # from mir_eval_modified.onset import f_measure
-import evaluation as eval
+import evaluation as my_eval
 from visualization import visualize_activation_and_gt
 
 
@@ -70,10 +70,10 @@ print(f"predictions_in_seconds: {Spf_predictions_in_seconds[:10]}")
 # scores_rcd = mir_eval.onset.evaluate(gt_onsets, RCDpredictions_in_seconds, window=0.05)
 
 
-gt_onsets = eval.get_reference_onsets(audiofile.replace('.wav', '.txt'))
+gt_onsets = my_eval.get_reference_onsets(audiofile.replace('.wav', '.txt'))
 exp_start = metadata[metadata['Filename'] == os.path.basename(audiofile)[:-4]]['Start_experiment_sec'].values[0]   
 exp_end = metadata[metadata['Filename'] == os.path.basename(audiofile)[:-4]]['End_experiment_sec'].values[0]
-gt_onsets, spfpredictions_in_seconds, activation_frames = eval.discard_events_outside_experiment_window(exp_start,exp_end, 
+gt_onsets, spfpredictions_in_seconds, activation_frames = my_eval.discard_events_outside_experiment_window(exp_start,exp_end, 
                                                 gt_onsets, Spf_predictions_in_seconds, activation_in_frames, hop_length, sr_superflux)
 
 fmeasure, precision, recall,TP, FP, FN  = mir_eval_new.onset.f_measure(gt_onsets, spfpredictions_in_seconds, window=0.5)

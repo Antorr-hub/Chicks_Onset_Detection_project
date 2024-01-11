@@ -14,53 +14,94 @@ import json
 
 
 
+# audio_folder = "C:\\Users\\anton\\High_quality_dataset"
+audio_folder = "/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/data/Validation_set"
+metadata = pd.read_csv(os.path.join(audio_folder, "chicks_validation_metadata.csv"))
 
-audio_folder = "C:\\Users\\anton\\High_quality_dataset"
 
-output_directory=r"./Grid_search_high_quality_dataset/"
+list_files = glob.glob(f'{audio_folder}/**/*.wav', recursive=True)
+
+output_directory="/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches"
 # Create output directory if it doesn't exist
 if not os.path.exists(output_directory):
     os.mkdir(output_directory)
 
-metadata = pd.read_csv("C:\\Users\\anton\\High_quality_dataset\\high_quality_dataset_metadata.csv")
+
+which_search = 'input_features' #' #'input_features'#, 'peak_picking', 'evaluation'
+
+if which_search == 'input_features':
+    output_file = os.path.join(output_directory, "superflux_search_input_features.json")
+elif which_search == 'peak_picking':
+    output_file = os.path.join(output_directory, "superflux_search_peak_picking.json")
+elif which_search == 'evaluation':
+    output_file = os.path.join(output_directory, "superflux_search_evaluation.json")
 
 
 
-
-
-print('**************** Starting grid search on Superflux')
-#Superflux grid search:
 #non-changing parameters
 frame_window= 0.12
 n_fft=2048 * 2
 hop_length=1024 // 2
 
 
-output_file = os.path.join(output_directory, "Superflux_eval_onset_correction_th.json")
 
-# # Ranges for Grid search parameters:
-n_mels_range = [15, 24, 32, 60]
+# input feature parameters 
+num_bands_range = [15, 24, 32, 60]
+num_bands = 15
 fmin_range=  [1800, 2000, 2050]
+fmin = 2050
 fmax_range = [5000, 6000, 8000]
-
+fmax = 6000
 lag_range= [1,3,5]
+lag = 5
 max_size_range = [40, 50, 60]
-global_shift_range = [-0.1, -0.05, -0.02,-0.01, 0, 0.01, 0.02, 0.05, 0.1]
+max_size = 50
 
-window_range = [0.1]
+# peak picking parameters
+pre_avg_range =[0, 10, 20, 25 ]
+pre_avg = 25
+post_avg_range =[0, 10, 20, 25]
+post_avg =25
+pre_max_range = [0, 10, 20, 25]
+pre_max = 10
+post_max_range = [1, 10, 3]
+post_max = 10
+delta_range = [0, 0.1, 2, 5]
+delta = 0
+wait_range = [0, 1, 10]
+wait = 0
+
+# evaluation parameters
+global_shift_range = [-0.1, -0.05, -0.02,-0.01, 0, 0.01, 0.02, 0.05, 0.1] 
+correction_shift = 0
+window_range = [0.05, 0.1, 0.2, 0.5, 2]
+eval_window = 0.1
 
 
-parameter_combinations = list(product(n_mels_range, fmin_range, fmax_range, lag_range, max_size_range, window_range, global_shift_range)) 
+
+
+if which_search == 'input_features':
+    parameter_combinations = list(product(num_bands_range, fmin_range, fmax_range, lag_range, max_size_range))
+elif which_search == 'peak_picking':
+    parameter_combinations = list(product(pre_avg_range, post_avg_range, pre_max_range, post_max_range, delta_range, wait_range))
+elif which_search == 'evaluation':
+    parameter_combinations = list(product(window_range, global_shift_range))
+
 
 overall_fmeasure_and_parameters = {}
+
 for i in tqdm(range(len(parameter_combinations))):
-    n_mels, fmin, fmax, lag, max_size, eval_window, correction_shift = parameter_combinations[i]
+    if which_search == 'input_features':
+        num_bands, fmin, fmax, lag, max_size = parameter_combinations[i]
+    elif which_search == 'peak_picking':
+        pre_avg, post_avg, pre_max, post_max, delta, wait = parameter_combinations[i]
+    elif which_search == 'evaluation':
+        eval_window, correction_shift = parameter_combinations[i]
 
     list_fscores_in_set = []
     list_n_events_in_set = []
     
-    
-    for filepath in glob.glob(f'{audio_folder}/**/*.wav', recursive=True):
+    for filepath in list_files:
 
 
         # Load ground truth
@@ -79,7 +120,9 @@ for i in tqdm(range(len(parameter_combinations))):
         
         
         SPF_predictions_in_seconds, SPF_activation_frames, spec_hop_length, spf_sr = onset_detectors.superflux(filepath, spec_hop_length= hop_length, spec_n_fft = n_fft, spec_window= frame_window,
-                                                                                    spec_n_mels= n_mels, spec_fmin= fmin, spec_fmax= fmax, spec_lag= lag , spec_max_size= max_size, visualise_activation=True)
+                                                                                    spec_n_mels= num_bands, spec_fmin= fmin, spec_fmax= fmax, spec_lag= lag , spec_max_size=max_size, 
+                                                                                    pp_pre_avg=pre_avg, pp_post_avg=post_avg, pp_pre_max=pre_max, pp_post_max=post_max, pp_threshold=delta, pp_wait=wait, 
+                                                                                    visualise_activation=True,)
         
         exp_start = metadata[metadata['Filename'] == os.path.basename(filepath)[:-4]]['Start_experiment_sec'].values[0]   
         exp_end = metadata[metadata['Filename'] == os.path.basename(filepath)[:-4]]['End_experiment_sec'].values[0]
@@ -101,10 +144,14 @@ for i in tqdm(range(len(parameter_combinations))):
     overall_fmeasure_in_set = eval.compute_weighted_average(list_fscores_in_set, list_n_events_in_set)
 
     # Save the overall F-measure and the corresponding parameters
-    overall_fmeasure_and_parameters[overall_fmeasure_in_set] = {'n_mels': n_mels, 'fmin': fmin, 'fmax': fmax, 'lag': lag, 'max_size': max_size, 'window': eval_window, 'correction_shift': correction_shift}
-
-    
+    overall_fmeasure_and_parameters[overall_fmeasure_in_set] = {'n_mels': num_bands, 'fmin': fmin, 'fmax': fmax, 'lag': lag, 'max_size': max_size,
+                                                                'pre_avg': pre_avg, 'post_avg': post_avg, 'pre_max': pre_max, 'post_max': post_max, 
+                                                                'delta': delta, 'wait': wait, 'window': eval_window, 'correction_shift': correction_shift}
+                                                   
 
 # Save the results in a JSON file
-with open(os.path.join(output_directory, 'Superflux_gridsearch_results.json'), "w") as file:
+with open(output_file, "w") as file:
     json.dump(overall_fmeasure_and_parameters, file)
+
+
+
