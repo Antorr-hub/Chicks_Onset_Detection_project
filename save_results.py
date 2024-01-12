@@ -5,13 +5,7 @@ import os
 from os.path import basename
 
 
-PATH= r"C:\Users\anton\Chicks_Onset_Detection_project\Validation_norm__dataset_default_params_results"
 
-
-folder_name = os.path.basename(PATH)
-
-output_csv = f'evaluation_results_{folder_name}.csv'
-output_latex = f'evaluation_results_{folder_name}.tex'
 
 def save_results_in_csv(folder_path):
     # Assuming df_f1 is already defined
@@ -63,7 +57,7 @@ def save_global_results_latex(data_folder):
     # Create a DataFrame from the transposed dictionary
     df = pd.DataFrame(data).transpose()
 
-    folder_name = os.path.basename(PATH)
+    folder_name = os.path.basename(data_folder)
 
     # output_csv_filename= f'evaluation_results_{folder_name}.csv'
     # output_latex_filename = f'evaluation_results_{folder_name}.tex'
