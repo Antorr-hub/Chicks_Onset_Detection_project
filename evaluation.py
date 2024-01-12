@@ -4,6 +4,7 @@ from mir_eval_modified import onset
 import glob
 import os
 import pandas as pd
+import onset_detection_algorithms as onset_detectors
 
 
 
@@ -161,7 +162,7 @@ def compute_weighted_average(scores_list, n_events_list):
 
 
 
-def compute_precision_recall_curve(onset_detector_function, data_folder, list_peak_picking_thresholds, exp_start, exp_end, eval_window=0.1,  hop_length= 441, sr= 44100):
+def compute_precision_recall_curve(onset_detector_function, data_folder, list_peak_picking_thresholds, exp_start, exp_end, eval_window=0.1, hop_length= 441, sr= 44100):
 
     audiofiles = glob.glob(data_folder + '/*.wav')
 
@@ -178,10 +179,10 @@ def compute_precision_recall_curve(onset_detector_function, data_folder, list_pe
             gt_onsets = get_reference_onsets(file.replace('.wav', '.txt'))
             n_events_list.append(len(gt_onsets))
 
-
-            predictions_scnd, predicted_events_frames = onset_detector_function(file, visualise_activation= True, pp_threshold=th, hop_length= hop_length, sr= sr)
-                        
             
+
+            predictions_scnd, predicted_events_frames, _, _= onset_detector_function(file, visualise_activation= True, pp_threshold=th)
+                                   
             
             gt_onsets, predictions_scnd, predicted_events_frames = discard_events_outside_experiment_window(exp_start,exp_end, 
                                                 gt_onsets, predictions_scnd, predicted_events_frames, hop_length= hop_length, sr= sr)
@@ -200,5 +201,27 @@ def compute_precision_recall_curve(onset_detector_function, data_folder, list_pe
     
 
     return av_precision_list, av_recall_list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

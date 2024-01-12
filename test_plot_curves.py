@@ -10,9 +10,6 @@ from tqdm import tqdm
 import glob
 
 
-
-
-
 eval_window = 0.1
 
 # file_name = '/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Data_train_val_normalised/chick41_d0.wav'
@@ -37,14 +34,14 @@ eval_window = 0.1
 #     precisions.append(prec)
 #     recalls.append(rec)
 
-data_folder = 'C:\\Users\\anton\\High_quality_dataset'
+data_folder = 'C:\\Users\\anton\\Data_normalised\\Testing_set'
 
 
 #call the metadata
-metadata = pd.read_csv("C:\\Users\\anton\\High_quality_dataset\\high_quality_dataset_metadata.csv")
+metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
 
 
-save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Precision_recall_curves_high_quality_dataset'
+save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Precision_recall_curves_testing_set'
 if not os.path.exists(save_evaluation_results_path):
     os.mkdir(save_evaluation_results_path)
     
@@ -61,22 +58,27 @@ for file in tqdm(list_files):
     exp_end = metadata[metadata['Filename'] == os.path.basename(file)[:-4]]['End_experiment_sec'].values[0]
     
     chick = os.path.basename(file)[:-4]
+    dataset = 'Testing_set'
 
 
-Hfc_thresholds = np.linspace(0.02, 7, 5)  # for the grid search we have tested 1.8, 2.5, 3
+#    # High Frequency Content 
+    # peak picking parameters tested in the grid search
+    # threshold_range = [1.8, 2.5, 3, 3.5]  
+    # best threshold = 1.8  with f-measure = 0.79
+
+Hfc_thresholds = np.linspace(0.02, 5, 100)  # for the grid search we have tested 1.8, 2.5, 3
 onset_detector_function = 'High_Frequency_Content'
-dataset = 'High_quality_dataset'
 precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.high_frequency_content, data_folder, Hfc_thresholds, exp_start, exp_end, eval_window= eval_window)
 
 
 
 
-vis.plot_precision_recall_thresholds(Hfc_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+onset_detector_function+'_'+dataset+'.png')
-vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
+# vis.plot_precision_recall_thresholds(Hfc_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+onset_detector_function+'_'+dataset+'.png')
+# vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
            
 
 
-Rcd_thresholds = np.linspace(20, 750, 5) # for the grid search we have tested 30, 50, 70
+Rcd_thresholds = np.linspace(20, 150, 100) # for the grid search we have tested 30, 50, 70
 onset_detector_function = 'Rectified_Complex_Domain'
 
 precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.rectified_complex_domain, data_folder, Rcd_thresholds, exp_start, exp_end,  eval_window= eval_window)
@@ -87,14 +89,17 @@ vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_r
 
 
 # Superflux
-Superflux_thresholds = np.linspace(0.0, 1.5 , 5) # for the grid search we have tested delta= 0
+# grid search parameters tested
+# delta_range = [0, 0.1, 2, 5]
+# best delta = 0.1 with f-measure = 0.71 on val and 0.48 on test
+
+
+Superflux_thresholds = np.linspace(0.0,5,100) # for the grid search we have tested delta= 0
 onset_detector_function = 'Superflux'
-precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.superflux, data_folder, Superflux_thresholds, exp_start, exp_end, eval_window= eval_window,  hop_length= 512, sr= 44100)
+precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.superflux, data_folder, Superflux_thresholds, exp_start, exp_end, eval_window= eval_window, hop_length= 512, sr= 44100)
 
 vis.plot_precision_recall_thresholds(Superflux_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
 vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
-
-
 
 
 
