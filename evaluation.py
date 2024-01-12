@@ -27,6 +27,17 @@ def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, pred
       
     return  new_gt_events, new_predicted_events, new_predicted_events_frames
 
+
+
+def discard_events_outside_experiment_window_double_threshold(exp_start, exp_end, gt_events, predicted_events):
+     # Filter onsets within the specified time window
+    new_gt_events =  gt_events[(gt_events >= exp_start) & (gt_events <= exp_end)]
+    new_predicted_events = predicted_events[(predicted_events >= exp_start) & (predicted_events <= exp_end)]
+
+    return  new_gt_events, new_predicted_events
+
+
+
 def double_onset_correction(onsets_predicted, gt_onsets, correction= 0.020):
     '''Correct double onsets by removing onsets which are less than a given threshold in time.
     Args:
