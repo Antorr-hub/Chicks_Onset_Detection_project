@@ -27,7 +27,7 @@ if not os.path.exists(output_directory):
     os.mkdir(output_directory)
 
 
-which_search = 'input_features' #' #'input_features'#, 'peak_picking', 'evaluation'
+which_search = 'evaluation' #' #'input_features'#, 'peak_picking', 'evaluation'
 
 if which_search == 'input_features':
     output_file = os.path.join(output_directory, "superflux_search_input_features.json")
@@ -51,30 +51,30 @@ num_bands = 15
 fmin_range=  [1800, 2000, 2050]
 fmin = 2050
 fmax_range = [5000, 6000, 8000]
-fmax = 6000
+fmax = 8000
 lag_range= [1,3,5]
-lag = 5
+lag = 3
 max_size_range = [40, 50, 60]
-max_size = 50
+max_size = 60 # These values have already been selected based on input features grid search on the validaition set!!!!!!
 
 # peak picking parameters
-pre_avg_range =[0, 10, 20, 25 ]
-pre_avg = 25
-post_avg_range =[0, 10, 20, 25]
-post_avg =25
-pre_max_range = [0, 10, 20, 25]
-pre_max = 10
+pre_avg_range =[1, 10, 20, 25 ]
+pre_avg = 10
+post_avg_range =[1, 10, 20, 25]
+post_avg =10
+pre_max_range = [1, 10, 20, 25]
+pre_max = 1
 post_max_range = [1, 10, 3]
-post_max = 10
+post_max = 1
 delta_range = [0, 0.1, 2, 5]
-delta = 0
+delta = 0.1
 wait_range = [0, 1, 10]
-wait = 0
+wait = 10 # These values have already been selected based on input features grid search on the validaition set!!!!!!
 
 # evaluation parameters
 global_shift_range = [-0.1, -0.05, -0.02,-0.01, 0, 0.01, 0.02, 0.05, 0.1] 
 correction_shift = 0
-window_range = [0.05, 0.1, 0.2, 0.5, 2]
+window_range = [0.05, 0.1, 0.5]
 eval_window = 0.1
 
 
@@ -144,7 +144,7 @@ for i in tqdm(range(len(parameter_combinations))):
     overall_fmeasure_in_set = eval.compute_weighted_average(list_fscores_in_set, list_n_events_in_set)
 
     # Save the overall F-measure and the corresponding parameters
-    overall_fmeasure_and_parameters[overall_fmeasure_in_set] = {'n_mels': num_bands, 'fmin': fmin, 'fmax': fmax, 'lag': lag, 'max_size': max_size,
+    overall_fmeasure_and_parameters[i] = {'f_measure' :overall_fmeasure_in_set,'n_mels': num_bands, 'fmin': fmin, 'fmax': fmax, 'lag': lag, 'max_size': max_size,
                                                                 'pre_avg': pre_avg, 'post_avg': post_avg, 'pre_max': pre_max, 'post_max': post_max, 
                                                                 'delta': delta, 'wait': wait, 'window': eval_window, 'correction_shift': correction_shift}
                                                    

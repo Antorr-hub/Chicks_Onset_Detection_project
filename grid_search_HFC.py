@@ -29,14 +29,14 @@ if not os.path.exists(output_directory):
     os.mkdir(output_directory)
 
 
-which_search = 'peak_picking' #' #'input_features'#, 'peak_picking', 'evaluation'
+which_search = 'evaluation' #' #'input_features'#, 'peak_picking', 'evaluation'
 
 if which_search == 'input_features':
     output_file = os.path.join(output_directory, "HFC_search_input_features.json")
 elif which_search == 'peak_picking':
     output_file = os.path.join(output_directory, "HFC_search_peak_picking.json")
 elif which_search == 'evaluation':
-    output_file = os.path.join(output_directory, "HFC_search_evaluation.json")
+    output_file = os.path.join(output_directory, "HFC_search_evaluation_with_double_onset_correction.json")
 
 
 #non-changing parameters
@@ -57,19 +57,22 @@ fref = 2800        # These values have already been selected based on input feat
 # peak picking parameters
 threshold_range = [1, 1.8, 2.5, 3]
 threshold = 1.8
-pre_avg_range =[0, 1, 3 ]
-pre_avg = 0
-post_avg_range =[0, 1, 3]
-post_avg = 0
+pre_avg_range =[1, 3, 25, 40 ]
+pre_avg = 25
+post_avg_range =[1, 3, 25, 40 ]
+post_avg = 1
 pre_max_range = [1, 2, 3]
-pre_max = 1
+pre_max = 3
 post_max_range = [1, 2, 3]
-post_max = 1
+post_max = 2   # These values have already been selected based on input features grid search on the validaition set
+
 
 # evaluation parameters
-global_shift_range = [-0.1, -0.05, -0.02,-0.01, 0, 0.01, 0.02, 0.05, 0.1] 
+global_shift_range = [-0.15, -0.1, 0.1, 0.15, 0.2] 
 correction_shift = 0
-window_range = [0.05, 0.1, 0.2, 0.5, 2]
+double_onset_correction_range = [ 0.025, 0.035, 0.05 , 0.055, 0.07 ]
+double_onset_correction = 0.02
+window_range = [0.1, 0.5]
 eval_window = 0.1
 
 
@@ -80,7 +83,7 @@ if which_search == 'input_features':
 elif which_search == 'peak_picking':
     parameter_combinations = list(product(threshold_range, pre_avg_range, post_avg_range, pre_max_range, post_max_range))
 elif which_search == 'evaluation':
-    parameter_combinations = list(product(window_range, global_shift_range))
+    parameter_combinations = list(product(window_range, global_shift_range, double_onset_correction_range))
 
 
 overall_fmeasure_and_parameters = {}
@@ -91,7 +94,7 @@ for i in tqdm(range(len(parameter_combinations))):
     elif which_search == 'peak_picking':
         threshold, pre_avg, post_avg, pre_max, post_max = parameter_combinations[i]
     elif which_search == 'evaluation':
-        eval_window, correction_shift = parameter_combinations[i]
+        eval_window, correction_shift, double_onset_correction = parameter_combinations[i]
 
     list_fscores_in_set = []
     list_n_events_in_set = []
@@ -124,8 +127,10 @@ for i in tqdm(range(len(parameter_combinations))):
         list_n_events_in_set.append(len(gt_onsets))
         
         shifted_predictions = eval.global_shift_correction(HFC_predictions_in_seconds, correction_shift )
+
+        corrected_double_onset_predictions = eval.double_onset_correction(shifted_predictions, double_onset_correction)
         
-        fmeasure, precision, recall, _, _, _  = f_measure(gt_onsets, shifted_predictions, window=eval_window)
+        fmeasure, precision, recall, _, _, _  = f_measure(gt_onsets, corrected_double_onset_predictions, window=eval_window)
 
         file_scores = [fmeasure, precision, recall]
         list_fscores_in_set.append(file_scores[0])
@@ -137,7 +142,7 @@ for i in tqdm(range(len(parameter_combinations))):
         # Save the overall F-measure and the corresponding parameters
     overall_fmeasure_and_parameters[i] = {'f_measure' :overall_fmeasure_in_set, 'num_bands': num_bands, 'fmin': fmin, 'fmax': fmax, 'fref': fref,
                                            'threshold': threshold, 'pre_avg': pre_avg, 'post_avg': post_avg, 'pre_max': pre_max, 'post_max': post_max, 
-                                           'window': eval_window, 'correction_shift': correction_shift}
+                                           'window': eval_window, 'correction_shift': correction_shift, 'double_onset_correction': double_onset_correction}
 
 # Save the results in a JSON file
 with open(output_file, "w") as file:
