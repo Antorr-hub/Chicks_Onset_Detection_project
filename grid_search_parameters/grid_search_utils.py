@@ -23,11 +23,12 @@ def read_best_parameters_from_json(file_json):
     # and read the parameters from that row
     fmeasure_list = []
     for key in results_dict:
-        fmeasure_list.append(results_dict[key]['f_measure'])
+        fmeasure_list.append(round(results_dict[key]['f_measure'], 3))
+        
     best_fmeasure = max(fmeasure_list)
     best_parameters = {}
     for i, key in enumerate(results_dict):
-        if results_dict[key]['f_measure'] == best_fmeasure:
+        if round(results_dict[key]['f_measure'], 3) == best_fmeasure:
             best_parameters[i] = results_dict[key]
             break
         else:
@@ -38,7 +39,34 @@ def read_best_parameters_from_json(file_json):
 if __name__ == "__main__":
 
 
-    HFC_best_input_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/HFC_search_input_features.json')
-    print(HFC_best_input_parameters)
+    # HFC_best_input_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/HFC_search_input_features.json')
+    # print(HFC_best_input_parameters)
+
+    # HFC_best_peak_picking_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/HFC_search_peak_picking.json')
+    # print(HFC_best_peak_picking_parameters)
+
+    # HFC_best_evaluation_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/HFC_search_evaluation.json')
+    # print(HFC_best_evaluation_parameters)
+    
+    
+    # superflux_best_input_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/superflux_search_input_features.json')
+    # print(superflux_best_input_parameters)
+
+    # superflux_best_peak_picking_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/superflux_search_peak_picking.json')
+    # print(superflux_best_peak_picking_parameters)
+
+    # superflux_best_evaluation_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/superflux_search_evaluation.json')
+    # print(superflux_best_evaluation_parameters)
+
+    # RCD_best_peak_picking_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/RCD_search_peak_picking.json')
+    # print(RCD_best_peak_picking_parameters)
+
+    # RCD_best_evaluation_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/RCD_search_evaluation.json')
+    # print(RCD_best_evaluation_parameters)
+
+
+
+    HFC_best_evaluation_parameters = read_best_parameters_from_json('/Users/ines/Dropbox/QMUL/BBSRC-chickWelfare/chick_vocalisations/Chicks_Onset_Detection_project/grid_search_parameters/results_grid_searches/HFC_search_evaluation_with_double_onset_correction.json')
+    print(HFC_best_evaluation_parameters)
 
     print('stop')

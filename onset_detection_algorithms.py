@@ -151,7 +151,8 @@ def normalized_weighted_phase_deviation(file_name, hop_length=441, sr=44100, pp_
 #######################°°°RECTIFIED COMPLEX DOMAIN°°°#######################################
 ############################################################################################
 # Define a function to run Rectified complex domain (RCD) for ODT
-def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 50, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=10, 
+def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 50, 
+                             pp_pre_avg=25, pp_post_avg=25, pp_pre_max=10, 
                             pp_post_max=10, visualise_activation=False): 
 
     '''Compute the onsets using the rectified complex domain algorithm with madmom.
@@ -177,6 +178,7 @@ def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 
     peaks = madmom.features.onsets.peak_picking(rcd_ons_fn, threshold= pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
     # Convert in seconds my onsets
     rcd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks]
+
     if visualise_activation:
         return np.array(rcd_onsets_seconds), rcd_ons_fn
     else:
@@ -192,7 +194,7 @@ def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 
 
 
 #######################°°°SUPERFLUX°°°######################################################
-############################################################################################
+############################################################################################ TODO #superflux returns 4 things instead of 3 if visualise=true, also names of parameters are different!
 # Define a function to run the Superflux algorithm for ODT
 def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_window=0.12, spec_fmin=2050, spec_fmax=8000,
                          spec_n_mels=15, spec_lag=5, spec_max_size=50, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=10, 

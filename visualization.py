@@ -21,8 +21,8 @@ def visualize_activation_and_gt(plot_dir,file_name, onset_detection_funtion_name
     plt.figure(figsize=(100, 5))
 
     plt.plot(seconds, activation, alpha=0.8, label=onset_detection_funtion_name) 
-    print(f"seconds: {seconds[:10]}")
-    print(f"onset_function: {activation[:10]}")
+    # print(f"seconds: {seconds[:10]}")
+    # print(f"onset_function: {activation[:10]}")
     #reference onsets
     for i in gt_onsets :
       plt.axvline(x=i, alpha=0.3, color="g")
@@ -38,11 +38,11 @@ def visualize_activation_and_gt(plot_dir,file_name, onset_detection_funtion_name
 
     # Construct the output file path with the specified file name
     plot_filename = os.path.join(plot_dir, f"{file_name.split('.wav')[0]}_onset_plot_{onset_detection_funtion_name}_.png")
-    print(f"plot_filename: {plot_filename}")
+    # print(f"plot_filename: {plot_filename}")
     plt.savefig(plot_filename)
     plt.close()
 
-    print(f"Plot saved as {plot_filename}")
+    # print(f"Plot saved as {plot_filename}")
     return
 
 
