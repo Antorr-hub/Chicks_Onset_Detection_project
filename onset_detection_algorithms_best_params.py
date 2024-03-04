@@ -3,8 +3,8 @@ import numpy as np
 import librosa
 import madmom
 import glob
-
-
+import pandas as pd
+import evaluation as my_eval
 
 
 
@@ -13,9 +13,8 @@ import glob
 #######################°°°HIGH FREQUENCY CONTENT°°°#########################################
 ############################################################################################
 
-
-def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=12, spec_fmin=1800, spec_fmax=6500, 
-                           spec_fref=2500, pp_threshold= 2.5, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=1, pp_post_max=1, visualise_activation=False ):
+def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=15, spec_fmin=2500, spec_fmax=5000, 
+                           spec_fref=2800, pp_threshold=1.8, pp_pre_avg=25, pp_post_avg=1, pp_pre_max=3, pp_post_max=2, visualise_activation=False):
     
     '''Compute the onsets using the high frequency content algorithm with madmom.
     Args:
@@ -39,9 +38,10 @@ def high_frequency_content(file_name, hop_length=441, sr=44100, spec_num_bands=1
     # Compute onset based on High frequency content with madmom
     activation = madmom.features.onsets.high_frequency_content(spec_mdm)
     # Applying the peak picking function to count number of onsets
-    peaks = madmom.features.onsets.peak_picking(activation,threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
+    peaks = madmom.features.onsets.peak_picking(activation, threshold=pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
 
-    hfc_onsets_seconds =[(peak * hop_length / sr ) for peak in peaks ]    
+    hfc_onsets_seconds =[(peak * hop_length / sr ) for peak in peaks ]  
+    
     if visualise_activation:
         return np.array(hfc_onsets_seconds), activation
     else:
@@ -145,13 +145,10 @@ def normalized_weighted_phase_deviation(file_name, hop_length=441, sr=44100, pp_
 
 
 
-
-
-
 #######################°°°RECTIFIED COMPLEX DOMAIN°°°#######################################
 ############################################################################################
 # Define a function to run Rectified complex domain (RCD) for ODT
-def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 50, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=10, 
+def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 70, pp_pre_avg=20, pp_post_avg=20, pp_pre_max=10, 
                             pp_post_max=10, visualise_activation=False): 
 
     '''Compute the onsets using the rectified complex domain algorithm with madmom.
@@ -177,6 +174,8 @@ def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 
     peaks = madmom.features.onsets.peak_picking(rcd_ons_fn, threshold= pp_threshold, smooth=None, pre_avg=pp_pre_avg, post_avg=pp_post_avg, pre_max=pp_pre_max, post_max=pp_post_max)
     # Convert in seconds my onsets
     rcd_onsets_seconds= [(peak * hop_length / sr ) for peak in peaks]
+    
+
     if visualise_activation:
         return np.array(rcd_onsets_seconds), rcd_ons_fn
     else:
@@ -186,19 +185,13 @@ def rectified_complex_domain(file_name, hop_length=441, sr=44100, pp_threshold= 
 
 
 
-
-
-
-
-
 #######################°°°SUPERFLUX°°°######################################################
 ############################################################################################
 # Define a function to run the Superflux algorithm for ODT
 def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_window=0.12, spec_fmin=2050, spec_fmax=8000,
-                         spec_n_mels=15, spec_lag=5, spec_max_size=50, pp_pre_avg=25, pp_post_avg=25, pp_pre_max=10, 
-                            pp_post_max=10, pp_threshold=0, pp_wait=0, visualise_activation=False):   
+                         spec_n_mels=15, spec_lag=3, spec_max_size=60, pp_pre_avg=1, pp_post_avg=10, pp_pre_max=1, 
+                            pp_post_max=1, pp_threshold=0.03, pp_wait=10, visualise_activation=False): 
     #pp_threshold is not the same as for the other functions, this is to be used as the delta for the mean adaptive thresholding
-    
     '''Compute the onsets using the superflux algorithm with librosa
     Args:
         file_name (str): Path to the audio file.
@@ -211,7 +204,6 @@ def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_win
         spec_lag (int): Lag value for computing difference.
         spec_max_size (int): Maximum size of the onset detection function.
         delta (float): Threshold offset for mean for peak picking.
-        wait (int): Number of samples to wait for the next onset.
         Returns:
         list: Onsets in seconds.
         '''
@@ -223,6 +215,7 @@ def superflux(file_name, spec_hop_length=1024 // 2, spec_n_fft=2048 *2, spec_win
     odf_sf = librosa.onset.onset_strength(S=librosa.power_to_db(S, ref=np.max), sr=spf_sr, hop_length= spec_hop_length, lag= spec_lag, max_size= spec_max_size)
     # detect onsets through superflux
     onset_sf = librosa.onset.onset_detect(onset_envelope=odf_sf, sr=spf_sr, hop_length= spec_hop_length, units='time', pre_max=pp_pre_max, post_max=pp_post_max, pre_avg=pp_pre_avg, post_avg=pp_post_avg, wait=pp_wait, delta=pp_threshold)
+   
     if visualise_activation:
         return np.array(onset_sf), odf_sf, spec_hop_length, spf_sr
     else:

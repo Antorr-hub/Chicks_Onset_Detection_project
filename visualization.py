@@ -84,3 +84,19 @@ def plot_precision_recall_curve(list_precisions, list_recalls, save_file_name = 
     plt.savefig(save_file_name)
     # TODO save figure
     return
+
+
+
+def plot_signal(signal, ):
+    """Plot the signal.
+
+    Args:
+        signal (np.array): Signal to plot.
+    """
+    plt.figure(figsize=(10, 5))
+    plt.plot(signal)
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.title("Signal")
+    plt.show()
+    return

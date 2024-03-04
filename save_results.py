@@ -82,3 +82,45 @@ def save_global_results_latex(data_folder):
 
     return table_csv, latex_table
 
+
+################################### Save the results in a .csv file distinguishing for sexes and groups ########################################
+
+
+
+def save_detected_calls_in_csv(folder_path):
+    # Define the DataFrame columns
+    df_columns = ["Chick", "Algorithm", "Numbers_of_calls", "Group", "Sex"]
+
+    # Create an empty DataFrame with defined columns
+    df_f1 = pd.DataFrame(columns=df_columns)
+
+    chick_folder = basename(folder_path)
+
+    # Iterate over the JSON files in the folder
+    for filename in glob.glob(f'{folder_path}/**/*.json', recursive=True):
+        if filename.endswith("_calls_detected_.json"):
+            # Read the JSON file
+            with open(filename, 'r') as file:
+                json_data = json.load(file)
+
+            # Extract relevant information from the JSON structure
+            chick_name = json_data.get("audiofilename", "N/A")
+            algorithm = json_data.get("Algorithm", "N/A")
+            numb_calls = json_data.get("Number of calls", "N/A")
+            group = json_data.get("Group", "N/A")
+            sex = json_data.get("Sex", "N/A")
+
+            # Create a list with values to append to DataFrame
+            row_values = [chick_name, algorithm, numb_calls, group, sex]
+
+            # Add a new row to the DataFrame
+            df_f1.loc[len(df_f1)] = row_values
+
+    csv_filename = os.path.join(folder_path, f"Total_number_of_calls_detected_{chick_folder}.csv")
+
+    # Save the DataFrame as a CSV file
+    df_f1.to_csv(csv_filename, index=False)
+
+    print("Total_number_of_calls_detected.csv:", csv_filename)
+
+    return csv_filename

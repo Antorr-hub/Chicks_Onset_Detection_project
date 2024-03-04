@@ -41,10 +41,10 @@ data_folder = 'C:\\Users\\anton\\Data_normalised\\Testing_set'
 metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
 
 
-save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Precision_recall_curves_testing_set'
+save_evaluation_results_path = r'C:\Users\anton\Chicks_Onset_Detection_project\Precision_recall_curves_testing_set_pre_tuning'
 if not os.path.exists(save_evaluation_results_path):
     os.mkdir(save_evaluation_results_path)
-    
+    #Precision_recall_curves_testing_set_pre_tuning
 
 
 list_files = glob.glob(os.path.join(data_folder, "*.wav"))
@@ -71,11 +71,11 @@ onset_detector_function = 'High_Frequency_Content'
 precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.high_frequency_content, data_folder, Hfc_thresholds, exp_start, exp_end, eval_window= eval_window)
 
 
-
-
-# vis.plot_precision_recall_thresholds(Hfc_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+onset_detector_function+'_'+dataset+'.png')
-# vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
-           
+vis.plot_precision_recall_thresholds(Hfc_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+onset_detector_function+'_'+dataset+'.png')
+vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
+# add to the forlder 
+vis.plot_precision_recall_thresholds(Hfc_thresholds, precisions, recalls, save_file_name=os.path.join(save_evaluation_results_path, 'Precision_recall_vs_thresholds_curve_'+onset_detector_function+'_'+dataset+'.png'))
+vis.plot_precision_recall_curve(precisions, recalls, save_file_name=os.path.join(save_evaluation_results_path, 'Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png'))          
 
 
 Rcd_thresholds = np.linspace(20, 150, 100) # for the grid search we have tested 30, 50, 70
@@ -86,44 +86,50 @@ precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.rec
 vis.plot_precision_recall_thresholds(Rcd_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
 vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
 
+vis.plot_precision_recall_thresholds(Rcd_thresholds, precisions, recalls, save_file_name=os.path.join(save_evaluation_results_path, 'Precision_recall_vs_thresholds_curve_'+onset_detector_function+'_'+dataset+'.png'))
+# add to the forlde
+vis.plot_precision_recall_curve(precisions, recalls, save_file_name=os.path.join(save_evaluation_results_path, 'Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png'))          
+vis.plot_precision_recall_thresholds(Rcd_thresholds, precisions, recalls, save_file_name=os.path.join(save_evaluation_results_path, 'Precision_recall_vs_thresholds_curve_'+onset_detector_function+'_'+dataset+'.png'))
 
 
 # Superflux
 # grid search parameters tested
-# delta_range = [0, 0.1, 2, 5]
-# best delta = 0.1 with f-measure = 0.71 on val and 0.48 on test
+# delta_range = delta_range = [0, 0.03, 0.05, 0.08, 0.1, 0.2]
+# best delta = 0.03 with f-measure = 0.838 on val and 0.738 on test
 
 
-Superflux_thresholds = np.linspace(0.0,5,100) # for the grid search we have tested delta= 0
-onset_detector_function = 'Superflux'
-precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.superflux, data_folder, Superflux_thresholds, exp_start, exp_end, eval_window= eval_window, hop_length= 512, sr= 44100)
+# Superflux_thresholds = np.linspace(0, 0.3, 100) # for the grid search we have tested delta= 0
+# onset_detector_function = 'Superflux'
+# precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.superflux, data_folder, Superflux_thresholds, exp_start, exp_end, eval_window= eval_window, hop_length= 512, sr= 44100)
 
-vis.plot_precision_recall_thresholds(Superflux_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
-vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
-
-
-
-
-Tpd_thresholds = np.linspace(0.87, 1.2, 5) # for the grid search we have tested 0.9, 0.95
-onset_detector_function = 'Thresholded_Phase_Deviation'
-precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.thresholded_phase_deviation, data_folder, Tpd_thresholds, exp_start, exp_end,  eval_window= eval_window)
-
-
-vis.plot_precision_recall_thresholds(Tpd_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
-vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
+# vis.plot_precision_recall_thresholds(Superflux_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
+# vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
+# vis.plot_precision_recall_thresholds(Superflux_thresholds, precisions, recalls, save_file_name=os.path.join(save_evaluation_results_path, 'Precision_recall_vs_thresholds_curve_'+onset_detector_function+'_'+dataset+'.png'))
+# vis.plot_precision_recall_curve(precisions, recalls, save_file_name=os.path.join(save_evaluation_results_path, 'Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png'))           
 
 
 
 
+# Tpd_thresholds = np.linspace(0.87, 1.2, 5) # for the grid search we have tested 0.9, 0.95
+# onset_detector_function = 'Thresholded_Phase_Deviation'
+# precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.thresholded_phase_deviation, data_folder, Tpd_thresholds, exp_start, exp_end,  eval_window= eval_window)
 
 
-Nwpd_thresholds = np.linspace(0.65, 1.5, 5) #for the grid search we have tested 0.8, 0.92, 0.95
+# vis.plot_precision_recall_thresholds(Tpd_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
+# vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
 
-onset_detector_function = 'Normalized_Weighted_Phase_Deviation'
-precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.normalized_weighted_phase_deviation, data_folder, Nwpd_thresholds, exp_start, exp_end, eval_window= eval_window)
 
-vis.plot_precision_recall_thresholds(Nwpd_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
-vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
+
+
+
+
+# Nwpd_thresholds = np.linspace(0.65, 1.5, 5) #for the grid search we have tested 0.8, 0.92, 0.95
+
+# onset_detector_function = 'Normalized_Weighted_Phase_Deviation'
+# precisions, recalls = my_eval.compute_precision_recall_curve(onset_detectors.normalized_weighted_phase_deviation, data_folder, Nwpd_thresholds, exp_start, exp_end, eval_window= eval_window)
+
+# vis.plot_precision_recall_thresholds(Nwpd_thresholds, precisions, recalls, save_file_name='Precision_recall_vs_thresholds_curve_'+ onset_detector_function+'_'+dataset+'.png')
+# vis.plot_precision_recall_curve(precisions, recalls, save_file_name='Precision_recall_curve_'+onset_detector_function+'_'+dataset+'.png')
 
 
 

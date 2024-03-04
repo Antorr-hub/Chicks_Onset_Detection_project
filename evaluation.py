@@ -4,8 +4,9 @@ from mir_eval_modified import onset
 import glob
 import os
 import pandas as pd
-import onset_detection_algorithms as onset_detectors
-
+import onset_detection_algorithms_best_params as onset_detectors
+from tqdm import tqdm
+import pandas as pd
 
 
 
@@ -30,6 +31,7 @@ def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, pred
 
 
 
+
 def discard_events_outside_experiment_window_double_threshold(exp_start, exp_end, gt_events, predicted_events):
      # Filter onsets within the specified time window
     new_gt_events =  gt_events[(gt_events >= exp_start) & (gt_events <= exp_end)]
@@ -39,7 +41,7 @@ def discard_events_outside_experiment_window_double_threshold(exp_start, exp_end
 
 
 
-def double_onset_correction(onsets_predicted, gt_onsets, correction= 0.020):
+def double_onset_correction(onsets_predicted, correction= 0.020):
     '''Correct double onsets by removing onsets which are less than a given threshold in time.
     Args:
         onsets_predicted (list): List of predicted onsets.
@@ -49,7 +51,7 @@ def double_onset_correction(onsets_predicted, gt_onsets, correction= 0.020):
         list: Corrected predicted onsets.
     '''    
     # Calculate interonsets difference
-    gt_onsets = np.array(gt_onsets, dtype=float)
+    #gt_onsets = np.array(gt_onsets, dtype=float)
 
     # Calculate the difference between consecutive onsets
     differences = np.diff(onsets_predicted)
@@ -64,15 +66,15 @@ def double_onset_correction(onsets_predicted, gt_onsets, correction= 0.020):
       # keep the onset if the difference is more than the given selected time
         filtered_onsets.append(onsets_predicted[i + 1])
         #print the number of onsets predicted after correction
-    return filtered_onsets
+    return np.array(filtered_onsets)
       
 #######################** ALGORITHMS**#############################################
 ################################################################################### COMPARE WITH ABOVE??
 #
 # #  Compute filtering of onset detection function
-def double_onsets_correction(onsets_predicted, gt_onsets, correction= 0.020):    
+def double_onsets_correction(onsets_predicted, correction= 0.020):    
     # Calculate interonsets difference
-    gt_onsets = np.array(gt_onsets, dtype=float)
+    # gt_onsets = np.array(gt_onsets, dtype=float)
 
     # Calculate the difference between consecutive onsets
     differences = np.diff(onsets_predicted)
@@ -87,7 +89,7 @@ def double_onsets_correction(onsets_predicted, gt_onsets, correction= 0.020):
       # keep the onset if the difference is more than the given selected time
         filtered_onsets.append(onsets_predicted[i + 1])
         #print the number of onsets predicted after correction
-    return filtered_onsets
+    return np.array(filtered_onsets)
       
 ############################################################################################
 ############################################################################################
@@ -141,6 +143,24 @@ def get_reference_onsets(file_txt):
 
 
 
+def get_reference_offsets(file_txt):
+    gt_offsets = []
+    with open(file_txt, "r",  encoding='latin-1') as file:
+            rows = file.readlines()
+
+    for row in rows:
+        columns = row.split()
+
+        if columns:
+            second_value = float(columns[1])
+            gt_offsets.append(second_value) 
+    assert gt_offsets, "File cannot be read!"
+
+    return np.array(gt_offsets)
+
+
+
+
 
 def compute_weighted_average(scores_list, n_events_list):
     """Compute the weighted average of a list of scores.
@@ -178,16 +198,17 @@ def compute_precision_recall_curve(onset_detector_function, data_folder, list_pe
 
             gt_onsets = get_reference_onsets(file.replace('.wav', '.txt'))
             n_events_list.append(len(gt_onsets))
-
             
 
-            predictions_scnd, predicted_events_frames, _, _= onset_detector_function(file, visualise_activation= True, pp_threshold=th)
+            predictions_scnd, predicted_events_frames= onset_detector_function(file, visualise_activation= True, pp_threshold=th, hop_length= hop_length, sr= sr)
                                    
             
             gt_onsets, predictions_scnd, predicted_events_frames = discard_events_outside_experiment_window(exp_start,exp_end, 
                                                 gt_onsets, predictions_scnd, predicted_events_frames, hop_length= hop_length, sr= sr)
 
+            predictions_scnd= global_shift_correction(predictions_scnd, shift=0.05)
 
+            #predictions_scnd = double_onset_correction(predictions_scnd, correction= 0)
             
             _, prec, rec, _,_,_ = onset.f_measure(gt_onsets, predictions_scnd, window=eval_window)
             individual_precision.append(prec)
