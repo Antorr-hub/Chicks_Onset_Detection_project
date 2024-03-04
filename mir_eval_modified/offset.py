@@ -30,7 +30,7 @@ import pandas as pd
 
 # The maximum allowable beat time
 MAX_TIME = 30000.
-
+PERCENT_OF_LENGTH = 0.5  #for the offset detection
 
 
 def validate(reference_offsets, estimated_offsets):
@@ -101,51 +101,81 @@ def f_measure(reference_onsets, reference_offsets, estimated_offsets, window=.05
     # If either list is empty, return 0s
     if reference_offsets.size == 0 or estimated_offsets.size == 0:
         return 0., 0., 0., [], estimated_offsets, reference_offsets
+    
+    assert reference_offsets.size == estimated_offsets.size , "The number of reference and estimated offsets should be the same"
 
     # Compute the best-case matching between reference and estimated onset
     # locations
-    matching = util_mod.match_events(reference_offsets, estimated_offsets, window)
+    matched_estimated = []
+    matched_reference = []
+    for i, ref_offset in enumerate(reference_offsets):
+        max_misalignment = PERCENT_OF_LENGTH * (ref_offset - reference_onsets[i])
+        if window > max_misalignment:
+            if abs(ref_offset - estimated_offsets[i]) <= window:
+                # TP = np.append(TP, estimated_offsets[i])
+                matched_estimated.append(i)
+                matched_reference.append(i)
+                break
+        elif max_misalignment >= window:
+            if abs(ref_offset - estimated_offsets[i]) <= max_misalignment:
+                # TP = np.append(TP, estimated_offsets[i])
+                matched_estimated.append(i)
+                matched_reference.append(i)
+                break
 
-    if len(matching) == 0:
-        return 0., 0., 0., [], estimated_offsets, reference_offsets
-    
-    matched_reference = list(list(zip(*matching))[0])
-    matched_estimated = list(list(zip(*matching))[1])
 
     ref_indexes = np.arange(len(reference_offsets))
     est_indexes = np.arange(len(estimated_offsets))
     unmatched_reference = set(ref_indexes) - set(matched_reference)
     unmatched_estimated = set(est_indexes) - set(matched_estimated)
-
     TP = estimated_offsets[matched_estimated]  
     FP = estimated_offsets[list(unmatched_estimated)]
     FN = reference_offsets[list(unmatched_reference)]
 
+    # matching = util_mod.match_events(reference_offsets, estimated_offsets, window)
+
+    # if len(matching) == 0:
+    #     return 0., 0., 0., [], estimated_offsets, reference_offsets
+    
+    # matched_reference = list(list(zip(*matching))[0])
+    # matched_estimated = list(list(zip(*matching))[1])
+
+    # ref_indexes = np.arange(len(reference_offsets))
+    # est_indexes = np.arange(len(estimated_offsets))
+    # unmatched_reference = set(ref_indexes) - set(matched_reference)
+    # unmatched_estimated = set(est_indexes) - set(matched_estimated)
+
+    # TP = estimated_offsets[matched_estimated]  
+    # FP = estimated_offsets[list(unmatched_estimated)]
+    # FN = reference_offsets[list(unmatched_reference)]
+
     # Calculate precision and recall
-    precision = float(len(matching))/len(estimated_offsets)
-    recall = float(len(matching))/len(reference_offsets)
-
-    # THIS IS THE MODIFIED PART TO CHECK THE COLLAR TIME OF HALF TIME OF TE DURATION OF THE EVENT
-    # Validate offset based on maximum misalignment
-    for i, ref_offset in enumerate(reference_offsets):
-        for j, est_offset in enumerate(estimated_offsets):
-            # Calculate permitted maximum misalignment allowed
-            max_misalignment = 0.5 * (ref_offset - reference_onsets[i])
-            if abs(ref_offset - est_offset) <= max_misalignment:
-                TP = np.append(TP, est_offset)
-                matched_estimated.append(j)
-                matched_reference.append(i)
-                break
-
-    # Update unmatched references and estimated
-    unmatched_reference = set(ref_indexes) - set(matched_reference)
-    unmatched_estimated = set(est_indexes) - set(matched_estimated)
-    FP = np.append(FP, estimated_offsets[list(unmatched_estimated)])
-    FN = np.append(FN, reference_offsets[list(unmatched_reference)])
-
-    # Recalculate precision and recall after considering collar_time
     precision = float(len(TP)) / (len(TP) + len(FP))
     recall = float(len(TP)) / (len(TP) + len(FN))
+    # precision = float(len(matching))/len(estimated_offsets)
+    # recall = float(len(matching))/len(reference_offsets)
+
+    # # THIS IS THE MODIFIED PART TO CHECK THE COLLAR TIME OF HALF TIME OF TE DURATION OF THE EVENT
+    # # Validate offset based on maximum misalignment
+    # for i, ref_offset in enumerate(reference_offsets):
+    #     for j, est_offset in enumerate(estimated_offsets):
+    #         # Calculate permitted maximum misalignment allowed
+    #         max_misalignment = 0.5 * (ref_offset - reference_onsets[i])
+    #         if abs(ref_offset - est_offset) <= max_misalignment:
+    #             TP = np.append(TP, est_offset)
+    #             matched_estimated.append(j)
+    #             matched_reference.append(i)
+    #             break
+
+    # # Update unmatched references and estimated
+    # unmatched_reference = set(ref_indexes) - set(matched_reference)
+    # unmatched_estimated = set(est_indexes) - set(matched_estimated)
+    # FP = np.append(FP, estimated_offsets[list(unmatched_estimated)])
+    # FN = np.append(FN, reference_offsets[list(unmatched_reference)])
+
+    # # Recalculate precision and recall after considering collar_time
+    # precision = float(len(TP)) / (len(TP) + len(FP))
+    # recall = float(len(TP)) / (len(TP) + len(FN))
 
     # Compute F-measure
     f_measure = 2 * precision * recall / (precision + recall)

@@ -39,9 +39,9 @@ for file in tqdm(list_files):
     gt_onsets = my_eval.get_reference_onsets(file.replace('.wav', '.txt'))
     gt_offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt'))
 
-    offsets_per_file = offset_detection_on_spectrograms(file, gt_onsets)
+    #offsets_per_file = offset_detection_on_spectrograms(file, gt_onsets)
 
-    #offsets_per_file = offset_detection_based_neg_slope_energy(file, gt_onsets, gt_offsets)
+    offsets_per_file = offset_detection_based_neg_slope_energy(file, gt_onsets, gt_offsets)
     
     #offsets_per_file = offset_detection_based_second_order(file, gt_onsets)
 
