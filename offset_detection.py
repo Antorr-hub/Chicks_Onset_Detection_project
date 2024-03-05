@@ -74,7 +74,7 @@ def offset_detection_based_neg_slope_energy(file_name, onsets, gt_offsets,  min_
 
     end_window = max_duration_from_onsets_frames
 
-    gt_offsets_fr = lb.time_to_frames(gt_offsets, sr=44100, hop_length=512)
+    # gt_offsets_fr = lb.time_to_frames(gt_offsets, sr=44100, hop_length=512)
     # expected_window = expected_window * sr
     offsets= []
 

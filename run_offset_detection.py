@@ -15,12 +15,12 @@ EVAL_WINDOW = 0.1
 chick_offsets = {}
 
 # Path to the folder containing the txt files to be evaluated
-audio_folder = 'C:\\Users\\anton\\Data_normalised\\Testing_set'
+audio_folder = 'C:\\Users\\anton\\Data_normalised\\Training_set'
 
-metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
+metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Training_set\\chicks_training_metadata.csv")
 
 # Path to the folder where the evaluation results will be saved
-save_evaluation_results_path = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\New_results\\testing_offset_old'
+save_evaluation_results_path = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\New_results\\training_offset_first_order'
 
 
 if not os.path.exists(save_evaluation_results_path):
@@ -41,7 +41,7 @@ for file in tqdm(list_files):
 
     #offsets_per_file = offset_detection_on_spectrograms(file, gt_onsets)
 
-    offsets_per_file = offset_detection_based_neg_slope_energy(file, gt_onsets, gt_offsets)
+    predicted_offsets = offset_detection_based_neg_slope_energy(file, gt_onsets, gt_offsets)
     
     #offsets_per_file = offset_detection_based_second_order(file, gt_onsets)
 
@@ -49,18 +49,18 @@ for file in tqdm(list_files):
     chick = os.path.basename(file)[:-4]
 
     with open(os.path.join(save_evaluation_results_path, chick + '_offsets.txt'), 'w') as file:
-        for offset in offsets_per_file:
+        for offset in predicted_offsets:
             file.write(str(offset) + '\n')
  
     exp_start = metadata[metadata['Filename'] == chick]['Start_experiment_sec'].values[0]   
     exp_end = metadata[metadata['Filename'] == chick]['End_experiment_sec'].values[0]
 
     #get ground truth onsets, HFCpredictions_in_seconds, activation_frames inside experiment window
-    gt_offsets, offsets_per_file = my_eval.discard_events_outside_experiment_window_double_threshold(exp_start,exp_end, 
-                                                    gt_offsets, offsets_per_file)
+    gt_onsets, gt_offsets, predicted_offsets = my_eval.discard_events_outside_experiment_window_offset_detection(exp_start,exp_end, 
+                                                    gt_onsets, gt_offsets, predicted_offsets)
     
        
-    Fscore, precision, recall, TP, FP, FN = f_measure(gt_onsets, gt_offsets, offsets_per_file , window= EVAL_WINDOW)
+    Fscore, precision, recall, TP, FP, FN = f_measure(gt_onsets, gt_offsets, predicted_offsets , window= EVAL_WINDOW)
 
     individual_fscores.append(Fscore)
     individual_precision.append(precision)

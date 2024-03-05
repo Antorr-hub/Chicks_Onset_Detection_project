@@ -29,7 +29,6 @@ def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, pred
       
     return  new_gt_events, new_predicted_events, new_predicted_events_frames
 
-<<<<<<< HEAD
 
 
 
@@ -39,6 +38,22 @@ def discard_events_outside_experiment_window_double_threshold(exp_start, exp_end
     new_predicted_events = predicted_events[(predicted_events >= exp_start) & (predicted_events <= exp_end)]
 
     return  new_gt_events, new_predicted_events
+
+
+
+def discard_events_outside_experiment_window_offset_detection(exp_start, exp_end, gt_onsets ,gt_offsets, predicted_events):
+     # Filter onsets within the specified time window
+    new_gt_onsets =  gt_onsets[(gt_onsets >= exp_start) & (gt_onsets <= exp_end)]
+
+    new_gt_offsets =  gt_offsets[(gt_offsets >= exp_start) & (gt_offsets <= exp_end)]
+
+    new_predicted_events = predicted_events[(predicted_events >= exp_start) & (predicted_events <= exp_end)]
+
+    return  new_gt_onsets,new_gt_offsets,  new_predicted_events
+
+
+
+
 
 
 
@@ -69,30 +84,20 @@ def double_onset_correction(onsets_predicted, correction= 0.020):
         #print the number of onsets predicted after correction
     return np.array(filtered_onsets)
       
-=======
-
->>>>>>> 1082798fac08d983372c015c543f933e40cff5b8
 #######################** ALGORITHMS**#############################################
 ################################################################################### 
 #
 # #  Compute filtering of onset detection function
-<<<<<<< HEAD
-def double_onsets_correction(onsets_predicted, correction= 0.020):    
-    # Calculate interonsets difference
-    # gt_onsets = np.array(gt_onsets, dtype=float)
-=======
 def double_onset_correction(onsets_predicted, correction=0.02):    
     
     if not correction == 0 or len(onsets_predicted) > 1:
         # Calculate the difference between consecutive onsets
         differences = np.diff(onsets_predicted)
->>>>>>> 1082798fac08d983372c015c543f933e40cff5b8
 
         # Create a list to add the filtered onset and add a first value
 
         filtered_onsets = [onsets_predicted[0]]  #Add the first onset
 
-<<<<<<< HEAD
     filtered_onsets = [onsets_predicted[0]]  #Add the first onset
 
     # Subtract all the onsets which are less than fixed threshold in time
@@ -102,17 +107,6 @@ def double_onset_correction(onsets_predicted, correction=0.02):
         filtered_onsets.append(onsets_predicted[i + 1])
         #print the number of onsets predicted after correction
     return np.array(filtered_onsets)
-=======
-        # Subtract all the onsets which are less than fixed threshold in time
-        for i, diff in enumerate(differences):
-            if diff >= correction:
-            # keep the onset if the difference is more than the given selected time
-                filtered_onsets.append(onsets_predicted[i + 1])
-                #print the number of onsets predicted after correction
-        return np.asarray(filtered_onsets)
-    else:
-        return onsets_predicted
->>>>>>> 1082798fac08d983372c015c543f933e40cff5b8
       
 ############################################################################################
 ############################################################################################

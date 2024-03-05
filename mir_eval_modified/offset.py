@@ -103,25 +103,27 @@ def f_measure(reference_onsets, reference_offsets, estimated_offsets, window=.05
         return 0., 0., 0., [], estimated_offsets, reference_offsets
     
     assert reference_offsets.size == estimated_offsets.size , "The number of reference and estimated offsets should be the same"
+    
+
+
 
     # Compute the best-case matching between reference and estimated onset
     # locations
     matched_estimated = []
     matched_reference = []
     for i, ref_offset in enumerate(reference_offsets):
-        max_misalignment = PERCENT_OF_LENGTH * (ref_offset - reference_onsets[i])
-        if window > max_misalignment:
-            if abs(ref_offset - estimated_offsets[i]) <= window:
-                # TP = np.append(TP, estimated_offsets[i])
-                matched_estimated.append(i)
-                matched_reference.append(i)
-                break
-        elif max_misalignment >= window:
-            if abs(ref_offset - estimated_offsets[i]) <= max_misalignment:
-                # TP = np.append(TP, estimated_offsets[i])
-                matched_estimated.append(i)
-                matched_reference.append(i)
-                break
+        for j, est_offset in enumerate(estimated_offsets):
+            max_misalignment = PERCENT_OF_LENGTH * (ref_offset - reference_onsets[i])
+            if window > max_misalignment:
+                if abs(ref_offset - estimated_offsets[j]) <= window:
+                    matched_estimated.append(j)
+                    matched_reference.append(i)
+                    break
+            elif max_misalignment >= window:
+                if abs(ref_offset - estimated_offsets[j]) <= max_misalignment:
+                    matched_estimated.append(j)
+                    matched_reference.append(i)
+                    break
 
 
     ref_indexes = np.arange(len(reference_offsets))
@@ -149,9 +151,8 @@ def f_measure(reference_onsets, reference_offsets, estimated_offsets, window=.05
     # FP = estimated_offsets[list(unmatched_estimated)]
     # FN = reference_offsets[list(unmatched_reference)]
 
-    # Calculate precision and recall
-    precision = float(len(TP)) / (len(TP) + len(FP))
-    recall = float(len(TP)) / (len(TP) + len(FN))
+
+
     # precision = float(len(matching))/len(estimated_offsets)
     # recall = float(len(matching))/len(reference_offsets)
 
@@ -178,12 +179,17 @@ def f_measure(reference_onsets, reference_offsets, estimated_offsets, window=.05
     # recall = float(len(TP)) / (len(TP) + len(FN))
 
     # Compute F-measure
-    f_measure = 2 * precision * recall / (precision + recall)
+
+    # Calculate precision and recall
+    precision = len(TP) / (len(TP) + len(FP)) if (len(TP) + len(FP)) > 0 else 0
+    recall = len(TP) / (len(TP) + len(FN)) if (len(TP) + len(FN)) > 0 else 0
+
+    # Compute F-measure
+    f_measure = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+
+   
 
     return f_measure, precision, recall, TP, FP, FN
 
     
-
-
-
 
