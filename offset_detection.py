@@ -57,7 +57,7 @@ def offset_detection_based_neg_slope_energy(file_name, onsets, gt_offsets,  min_
     y, sr= lb.load(file_name, sr=44100)
     # plot_signal(y)
     spectrogram= lb.feature.melspectrogram(y=y, sr=44100, hop_length=512, n_fft=2048 * 2, window=0.12, fmin= 2050, fmax=8000, n_mels= 15)
-
+    
     min_duration_from_onsets = onsets + min_duration
     max_duration_from_onsets = onsets + max_duration
 
