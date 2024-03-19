@@ -9,51 +9,58 @@ import utils as ut
 
 
 
-
-
 # create dictionary with the duration of the calls for each chick
 chick_durations = {}
-
+average_durations = {}
+minimum_durations = {}
+maximum_durations = {}
 # Path to the folder containing the txt files to be evaluated
 audio_folder = 'C:\\Users\\anton\\Data_normalised\\Training_set'
 
 metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Training_set\\chicks_training_metadata.csv")
 
 # Path to the folder where the evaluation results will be saved
-save_evaluation_results_path = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Offsets_training_calls'
+save_evaluation_results_path = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Duration_from_estimated_offsets_training_calls'
 if not os.path.exists(save_evaluation_results_path):
     os.makedirs(save_evaluation_results_path)
 
-
+offset_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Estimated_offsets\\training_offset'
 
 n_events_list = []
 list_files = glob.glob(os.path.join(audio_folder, "*.wav"))
 
-
+offset_files = glob.glob(os.path.join(offset_folder, "*.txt"))
 
 for file in tqdm(list_files):
-
-
-
-    # # get ground truth (onsets, offsets)
-    gt_onsets = my_eval.get_reference_onsets(file.replace('.wav', '.txt'))
-    gt_offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt'))
-    # make a tuple of onsets and offsets:
-    # make a list of tuples of onsets and offsets
-
+    chick =os.path.basename(file)[:-4]  #'chick21_d0'
+    # search in the offset folder the file with the same chick name
+    off_file = None
+    for offset_file in offset_files:
+        if chick in offset_file:
+            off_file = offset_file
+            break
     
-    events = list(zip(gt_onsets, gt_offsets))
-    # # # discard events outside experiment window
-    exp_start = metadata[metadata['Filename'] == os.path.basename(file)[:-4]]['Start_experiment_sec'].values[0]   
+    assert off_file, "File not found"
+    
+
+    #offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt'))
+    offsets = my_eval.get_external_reference_offsets(off_file)
+    gt_onsets = my_eval.get_reference_onsets(file.replace('.wav', '.txt'))
+    #gt_offsets = my_eval.get_reference_offsets(
+    # match the instances of the ground truth onsets with the instances of the estimated offsets in time 
+  
+    # Retrieve experiment window boundaries
+    exp_start = metadata[metadata['Filename'] == os.path.basename(file)[:-4]]['Start_experiment_sec'].values[0]
     exp_end = metadata[metadata['Filename'] == os.path.basename(file)[:-4]]['End_experiment_sec'].values[0]
 
-    new_events = []
-    for event in events:
-        if event[0] > exp_start and event[1] < exp_end:
-            new_events.append(event)
+    # Filter events to include only those within the experiment window
 
-  
-    chick = os.path.basename(file)[:-4]
+    
+    new_gt_onsets =  gt_onsets[(gt_onsets >= exp_start) & (gt_onsets <= exp_end)]
+    new_offsets = offsets[(offsets >= exp_start) & (offsets <= exp_end)]
+
+    events = list(zip(new_gt_onsets, new_offsets))
+    # chick = os.path.basename(file)[:-4]
         
     durations = ut.calculate_durations(events)
 
@@ -70,9 +77,7 @@ for file in tqdm(list_files):
     df.to_csv(os.path.join(save_evaluation_results_path, 'all_durations.csv'), mode='a', header=False, index=False)
 
     # compute the average duration of the calls for each chick
-    average_durations = {}
-    minimum_durations = {}
-    maximum_durations = {}
+
     for chick, durations in chick_durations.items():
         # compute the average duration of the calls for each chick
         average_duration = sum(durations) / len(durations)
@@ -88,7 +93,7 @@ for file in tqdm(list_files):
     df = pd.DataFrame(average_durations.items(), columns = ['Chick', 'Average_duration'])
     df.to_csv(os.path.join(save_evaluation_results_path, 'average_durations.csv'), index=False)
 
-    
+
 
 
 # compute for all the chicks the average duration of the calls
