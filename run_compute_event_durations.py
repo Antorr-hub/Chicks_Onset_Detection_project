@@ -15,52 +15,59 @@ average_durations = {}
 minimum_durations = {}
 maximum_durations = {}
 # Path to the folder containing the txt files to be evaluated
-audio_folder = 'C:\\Users\\anton\\Data_normalised\\Training_set'
+audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\Data\\normalised_data_only_inside_exp_window\\Training_set'
 
-metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Training_set\\chicks_training_metadata.csv")
+# metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Training_set\\chicks_training_metadata.csv")
 
 # Path to the folder where the evaluation results will be saved
-save_evaluation_results_path = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Duration_from_estimated_offsets_training_calls'
+save_evaluation_results_path = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Duration_from_training_calls'
 if not os.path.exists(save_evaluation_results_path):
     os.makedirs(save_evaluation_results_path)
 
-offset_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Estimated_offsets\\training_offset'
+offset_folder_predicted = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\offset_detection\\results_predicted_offsets\\training_offset_first_order'
 
 n_events_list = []
 list_files = glob.glob(os.path.join(audio_folder, "*.wav"))
 
-offset_files = glob.glob(os.path.join(offset_folder, "*.txt"))
+predicted_offset_files = glob.glob(os.path.join(offset_folder_predicted, "*.txt"))
 
 for file in tqdm(list_files):
     chick =os.path.basename(file)[:-4]  #'chick21_d0'
     # search in the offset folder the file with the same chick name
-    off_file = None
-    for offset_file in offset_files:
-        if chick in offset_file:
-            off_file = offset_file
+    pred_off_file = None
+    for pred_offset_file in predicted_offset_files:
+        if chick in pred_offset_file:
+            pred_off_file = pred_offset_file
             break
-    
-    assert off_file, "File not found"
+
+    assert pred_off_file, "File not found"
     
 
     #offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt'))
-    offsets = my_eval.get_external_reference_offsets(off_file)
+    predicted_offsets = my_eval.get_external_reference_offsets(pred_off_file)
     gt_onsets = my_eval.get_reference_onsets(file.replace('.wav', '.txt'))
-    #gt_offsets = my_eval.get_reference_offsets(
+    gt_offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt'))
     # match the instances of the ground truth onsets with the instances of the estimated offsets in time 
   
-    # Retrieve experiment window boundaries
-    exp_start = metadata[metadata['Filename'] == os.path.basename(file)[:-4]]['Start_experiment_sec'].values[0]
-    exp_end = metadata[metadata['Filename'] == os.path.basename(file)[:-4]]['End_experiment_sec'].values[0]
+    # # Retrieve experiment window boundaries
+    # exp_start = metadata[metadata['Filename'] == os.path.basename(file)[:-4]]['Start_experiment_sec'].values[0]
+    # exp_end = metadata[metadata['Filename'] == os.path.basename(file)[:-4]]['End_experiment_sec'].values[0]
+    # # Filter events to include only those within the experiment window
 
+
+    # crete tuple of offsets, (gt, pred)
+    # offsets_tuple = list(zip(gt_offsets, predicted_offsets))
     # Filter events to include only those within the experiment window
-
+    # new_gt_onsets, new_offsets_tuple =  my_eval.discard_events_outside_experiment_window_offset_detection(exp_start, exp_end, gt_onsets, offsets_tuple)
     
-    new_gt_onsets =  gt_onsets[(gt_onsets >= exp_start) & (gt_onsets <= exp_end)]
-    new_offsets = offsets[(offsets >= exp_start) & (offsets <= exp_end)]
+    # new_gt_onsets =  gt_onsets[(gt_onsets >= exp_start) & (gt_onsets <= exp_end)]
+    # new_pred_offsets = predicted_offsets[(predicted_offsets >= exp_start) & (predicted_offsets <= exp_end)]
+    # new_gt_offsets = gt_offsets[(gt_offsets >= exp_start) & (gt_offsets <= exp_end)]
 
-    events = list(zip(new_gt_onsets, new_offsets))
+
+    events = list(zip(gt_onsets, predicted_offsets))
     # chick = os.path.basename(file)[:-4]
+        
         
     durations = ut.calculate_durations(events)
 
