@@ -22,7 +22,7 @@ Metrics
   based on the number of esimated onsets which are sufficiently close to
   reference onsets.
 '''
-from . import util_mod
+#from . import util_mod
 import collections
 import numpy as np
 import warnings
@@ -33,25 +33,25 @@ MAX_TIME = 30000.
 PERCENT_OF_LENGTH = 0.5  #for the offset detection
 
 
-def validate(reference_offsets, estimated_offsets):
-    """Checks that the input annotations to a metric look like valid offset time
-    arrays, and throws helpful errors if not.
+# def validate(reference_offsets, estimated_offsets):
+#     """Checks that the input annotations to a metric look like valid offset time
+#     arrays, and throws helpful errors if not.
 
-    Parameters
-    ----------
-    reference_onsets : np.ndarray
-        reference onset locations, in seconds
-    estimated_onsets : np.ndarray
-        estimated onset locations, in seconds
+#     Parameters
+#     ----------
+#     reference_onsets : np.ndarray
+#         reference onset locations, in seconds
+#     estimated_onsets : np.ndarray
+#         estimated onset locations, in seconds
 
-    """
-    # If reference or estimated onsets are empty, warn because metric will be 0
-    if reference_offsets.size == 0:
-        warnings.warn("Reference onsets are empty.")
-    if estimated_offsets.size == 0:
-        warnings.warn("Estimated onsets are empty.")
-    for offsets in [reference_offsets, estimated_offsets]:
-        util_mod.validate_events(offsets, MAX_TIME)
+#     """
+#     # If reference or estimated onsets are empty, warn because metric will be 0
+#     if reference_offsets.size == 0:
+#         warnings.warn("Reference onsets are empty.")
+#     if estimated_offsets.size == 0:
+#         warnings.warn("Estimated onsets are empty.")
+#     for offsets in [reference_offsets, estimated_offsets]:
+#         util_mod.validate_events(offsets, MAX_TIME)
 
 
 
@@ -97,11 +97,10 @@ def f_measure(reference_onsets, reference_offsets, estimated_offsets, window=.05
     """
 
 
-    matching = validate(reference_offsets, estimated_offsets)
+    #matching = validate(reference_offsets, estimated_offsets)
     # If either list is empty, return 0s
-    #if reference_offsets.size == 0 or estimated_offsets.size == 0:
-    if matching == 0:
-        return 0., 0., 0., [], estimated_offsets, reference_offsets
+    # if reference_offsets.size == 0 or estimated_offsets.size == 0:
+    #     return 0., 0., 0., [], estimated_offsets, reference_offsets
     
     assert reference_offsets.size == estimated_offsets.size , "The number of reference and estimated offsets should be the same"
     
@@ -114,21 +113,24 @@ def f_measure(reference_onsets, reference_offsets, estimated_offsets, window=.05
 
 
     for i in range(len(reference_offsets)):
-        for j in range(len(estimated_offsets)):
-            max_misalignment = PERCENT_OF_LENGTH * (reference_offsets[i] - reference_onsets[i])
-            if window >= max_misalignment:
-                if abs(reference_offsets[i] - estimated_offsets[j]) <= window:
-                    matched_estimated.append(j)
-                    matched_reference.append(i)
-                    break
-            elif max_misalignment >= window:
-                if abs(reference_offsets[i] - estimated_offsets[j]) <= max_misalignment:
-                    matched_estimated.append(j)
-                    matched_reference.append(i)
-                    break  
-
+        # for j in range(len(estimated_offsets)):
+        max_misalignment = PERCENT_OF_LENGTH * (reference_offsets[i] - reference_onsets[i])
+        if window >= max_misalignment:
+            if abs(reference_offsets[i] - estimated_offsets[i]) <= window:
+                matched_estimated.append(i)
+                matched_reference.append(i)
+                
+        elif max_misalignment >= window:
+            if abs(reference_offsets[i] - estimated_offsets[i]) <= max_misalignment:
+                matched_estimated.append(i)
+                matched_reference.append(i)
+                 
+    # Calculate the unmatched reference and estimated onsets
     ref_indexes = np.arange(len(reference_offsets))
     est_indexes = np.arange(len(estimated_offsets))
+    # unmatched_reference = np.setdiff1d(ref_indexes, matched_reference)
+    # unmatched_estimated = np.setdiff1d(est_indexes, matched_estimated)
+    
     unmatched_reference = set(ref_indexes) - set(matched_reference)
     unmatched_estimated = set(est_indexes) - set(matched_estimated)
 
