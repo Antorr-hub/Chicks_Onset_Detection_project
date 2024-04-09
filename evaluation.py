@@ -13,7 +13,7 @@ import pandas as pd
 
 def discard_events_outside_experiment_window(exp_start, exp_end, gt_events, predicted_events, predicted_events_frames, hop_length= 441, sr= 44100): # TODO MODIFY THIS TO WORK WITH SUPERFLUX!!
  
-
+# this just discards onsets, not events!
     # Filter onsets within the specified time window
     new_gt_events =  gt_events[(gt_events >= exp_start) & (gt_events <= exp_end)]
     new_predicted_events = predicted_events[(predicted_events >= exp_start) & (predicted_events <= exp_end)]
@@ -41,17 +41,31 @@ def discard_events_outside_experiment_window_double_threshold(exp_start, exp_end
 
 
 
-def discard_events_outside_experiment_window_offset_detection(exp_start, exp_end, gt_onsets ,gt_offsets, predicted_events):
-     # Filter onsets within the specified time window
-    new_gt_onsets =  gt_onsets[(gt_onsets >= exp_start) & (gt_onsets <= exp_end)]
+def discard_events_outside_experiment_window_offset_detection(exp_start, exp_end, gt_onsets, gt_offsets):
+    '''Filter events within the specified time window.
+      works in seconds, while event (onset, offset) needs to be inside the experiment window '''
+    # Create a list of tuples containing both gt_onsets and gt_offsets
+    events = list(zip(gt_onsets, gt_offsets))
+    
+    # Filter events within the specified time window
+    new_events = [event for event in events if exp_start <= event[0] <= exp_end and exp_start <= event[1] <= exp_end]
+    
+    # Unzip the filtered events to get new_gt_onsets and new_gt_offsets
+    new_gt_onsets, new_gt_offsets = zip(*new_events)
+    
+    return np.array(new_gt_onsets) , np.array(new_gt_offsets)
 
-    new_gt_offsets =  gt_offsets[(gt_offsets >= exp_start) & (gt_offsets <= exp_end)]
 
-    new_predicted_events = predicted_events[(predicted_events >= exp_start) & (predicted_events <= exp_end)]
+# def discard_events_outside_experiment_window_offset_detection(exp_start, exp_end, gt_onsets, gt_offsets):
+#     # Filter events within the specified time window
+#     new_gt_onsets = []
+#     new_gt_offsets = []
+#     for i in range(len(gt_onsets)):
+#         if exp_start <= gt_onsets[i] <= exp_end and exp_start <= gt_offsets[i] <= exp_end:
+#             new_gt_onsets.append(gt_onsets[i])
+#             new_gt_offsets.append(gt_offsets[i])
 
-    return  new_gt_onsets,new_gt_offsets,  new_predicted_events
-
-
+#     return new_gt_onsets, new_gt_offsets
 
 
 
@@ -156,6 +170,22 @@ def get_reference_onsets(file_txt):
     assert gt_onsets, "File cannot be read!"
     return np.array(gt_onsets)
 
+
+
+
+def get_external_reference_offsets(file_txt):
+    gt_offsets = []
+    with open(file_txt, "r",  encoding='latin-1') as file:
+            rows = file.readlines()
+
+    for row in rows:
+        columns = row.split()
+
+        if columns:
+            second_value = float(columns[0])
+            gt_offsets.append(second_value) 
+    assert gt_offsets, "File cannot be read!"
+    return np.array(gt_offsets)
 
 
 
