@@ -20,43 +20,50 @@ import soundfile as sf
 # Path to the folder containing the txt files to be evaluated
 #audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\Data\\normalised_data_only_inside_exp_window\\Testing_set'
 
+
+audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\Data\\normalised_data_only_inside_exp_window\\Sub_testing_set'
+
+
 #metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
 
 
-audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Subset_features'
+#audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Subset_features'
 
 list_files = glob.glob(os.path.join(audio_folder, "*.wav"))
 
 #file= 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Data\\normalised_data_only_inside_exp_window\\Testing_set\\chick367_d1.wav'
 
 
-
+ 
 #metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
-save_results_folder = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Segmentation_task\\subset_calls\\new_test'
+save_results_folder = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Segmentation_task\\subset_calls\\test_F0_statistics'
 if not os.path.exists(save_results_folder):
     os.makedirs(save_results_folder)
+
 
 
 # for i in range(len(parameters)):
     # Iterate over each audio file
 for file in tqdm(list_files):
+    onsets = my_eval.get_reference_onsets(file.replace('.wav', '.txt'))
+    offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt'))
     
     chick = os.path.basename(file)[:-4]
 
     ##### 1- Load audio file
-    audio_y, sr = lb.load(file, sr=44100, duration=10.0)
+    audio_y, sr = lb.load(file, sr=44100)
 
 
     ##### 2- Apply the Bandpass filter
     # The Bandpass filter is applied to the audio signal to remove 
     # the background noise and keep only the chick's vocalizations ( among the frequencies 2000-12500 Hz)
 
-    audio_y = ut.bp_filter(audio_y, sr, lowcut=1800, highcut=12500)
+    audio_y = ut.bp_filter(audio_y, sr, lowcut=1600, highcut=12700)
 
-    # show the waveform 
-    plt.figure(figsize=(30, 8))
-    plt.plot(audio_y)
-    plt.show()
+    # # show the waveform 
+    # plt.figure(figsize=(30, 8))
+    # plt.plot(audio_y)
+    # plt.show()
 
     # Parameters for spectrogram and pitch estimation
     frame_length = 2048
@@ -70,10 +77,10 @@ for file in tqdm(list_files):
     fmax = 12500
     resolution = 0.01   
 
-    #### 3- Estimate pitch using PYIN    
-    # f0_pyin_lb, voiced_flag, voiced_probs = lb.pyin(audio_y, sr=sr, frame_length=frame_length, hop_length=hop_length, 
-    # fmin=fmin, fmax=fmax, n_thresholds=threshold, beta_parameters=beta_parameters, resolution=resolution)
-    
+    ### 3- Estimate pitch using PYIN    
+    f0_pyin_lb, voiced_flag, voiced_probs = lb.pyin(audio_y, sr=sr, frame_length=frame_length, hop_length=hop_length, 
+    fmin=fmin, fmax=fmax, n_thresholds=threshold, beta_parameters=beta_parameters, resolution=resolution)
+    call
     # f0_in_times = lb.times_like(f0_pyin_lb, sr=sr, hop_length=hop_length)
     # #save f0_pyin_lb to csv
     # f0_pyin_lb_df = pd.DataFrame(f0_pyin_lb)
@@ -83,24 +90,49 @@ for file in tqdm(list_files):
     # # Save pitch data to CSV
     # f0_pyin_df = pd.DataFrame(f0_in_times, columns=['F0_in_Time'])
     # f0_pyin_df.to_csv(chick + '_f0_pyin_.csv', index=False)
+    # Extract calls
+    f0_calls = ut.get_calls_F0(f0_pyin_lb, onsets, offsets)
+    call_F0_statistics = []
+    #### Compute for each calls statistics over the F0: Mean, Standard Deviation, Skewness, Kurtosis 
+    for i, call in enumerate(f0_calls):
+        # convert call to a DataFrame
+        f0_call = pd.DataFrame(call, columns=['F0'])
+        # compute the statistics
+        f0_call_mean, f0_call_std, f0_call_skewness, f0_call_kurtosis = f0_call['F0'].mean(), f0_call['F0'].std(), stats.skew(f0_call['F0']), stats.kurtosis(f0_call['F0'])
+        # Append statistics to the list
+        call_F0_statistics.append({
+            'Call Number': i,
+            'Mean': f0_call_mean,
+            'Standard Deviation': f0_call_std,
+            'Skewness': f0_call_skewness,
+            'Kurtosis': f0_call_kurtosis
+        })
+    print(f'The main statistic of the call are', call_F0_statistics)
+    # save the statistics to a json file
+    f0_call_statistics_filename = os.path.join(save_results_folder, f"{chick}_F0_statistics.json")
+    with open(f0_call_statistics_filename, 'w') as file:
+        json.dump(call_F0_statistics, file)
 
 
 ########################################################################################################################################
 
     
-    # Compute the analytic signal
-    analytic_signal = hilbert(audio_y)
+    # # Compute the analytic signal
+    # analytic_signal = hilbert(audio_y)
 
-    # Compute the envelope
-    envelope = np.abs(analytic_signal)
-    # show the envelope
-    plt.figure(figsize=(30, 8))
-    plt.plot(envelope)
-    plt.show()
-    #save image
-    plt.savefig(os.path.join(save_results_folder, f"{chick}_envelope.png"))
-    # Compute the instantaneous phase
-    instantaneous_phase = np.unwrap(np.angle(analytic_signal))
+    # # Compute the envelope
+    # envelope = np.abs(analytic_signal)
+
+    # # compute the peaks of the envelope # REVIEW THE DISTANCE
+    # peaks, _ = signal.find_peaks(envelope, distance=1000)
+    # # show the envelope
+    # plt.figure(figsize=(30, 8))
+    # plt.plot(envelope)
+    # plt.show()
+    # #save image
+    # plt.savefig(os.path.join(save_results_folder, f"{chick}_envelope.png"))
+    # # Compute the instantaneous phase
+    # instantaneous_phase = np.unwrap(np.angle(analytic_signal))
 
 
    
@@ -127,24 +159,37 @@ for file in tqdm(list_files):
 
 
     #######################################################################################################################################
-    # # Compute the spectral bandwidth and then extract the mean
+    # Compute the spectral bandwidth and then extract the mean
     # lin_spec= np.abs(lb.stft(y=audio_y, n_fft=frame_length, hop_length=hop_length))
     # # Compute the frequencies
     # frequencies = lb.fft_frequencies(sr=sr, n_fft=frame_length)
 
     # energy_y = np.array([sum(abs(audio_y[i:i+frame_length]**2))for i in range(0, len(audio_y), hop_length)])
 
+    #     # take the onsets and offsets from the metadata file
+    # # # get ground truth (onsets, offsets)
+    # onsets = my_eval.get_reference_onsets(file.replace('.wav', '.txt'))
+    # offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt')) 
 
-    # # Compute the rms (loudness) of the audio
-    # rms_y = lb.feature.rms(S=lin_spec, frame_length=frame_length, hop_length=hop_length)
-    # # compute the times for the rm
-    # audio_duration = len(audio_y) / sr
+    
+    # #### 4- Segment the calls in wave files
+    # calls_wave_file = ut.get_calls_waveform(audio_y, onsets, offsets, sr= 44100)
+    # for call in calls_wave_file:
 
-    # rms_y_times = lb.frames_to_time(np.arange(rms_y.shape[-1]), sr=sr, hop_length=hop_length)
-    # # create a dataframe with the rms values
-    # rms_y_df = pd.DataFrame(rms_y_times, columns=['RMS'])
-    # # save rms_y to csv
-    # rms_y_df.to_csv(chick + '_rms_.csv', index=False)
+    #     # Compute the rms (loudness) of the audio
+    #     rms_call = lb.feature.rms(y=call, frame_length=frame_length, hop_length=hop_length)
+        
+    #     # compute the mean and st.dev of the rms
+    #     mean_rms, st_dev_rms = np.mean(rms_call), np.std(rms_call)
+    #     # create dictionary with the mean and skewness of the rms
+    #     rms_call_statistics = {
+    #         'Mean': mean_rms,
+    #         'St.dev.': st_dev_rms
+    #     }
+
+    #     print(f'The main statistic of the call are', rms_call_statistics)
+
+
     # # Plot the linear spectrogram
     # plt.figure(figsize=(30, 8))
     # lb.display.specshow(lb.amplitude_to_db(lin_spec, ref=np.max), sr=sr, hop_length=hop_length, x_axis='time', y_axis='linear', cmap='viridis', alpha=0.75)
@@ -159,6 +204,9 @@ for file in tqdm(list_files):
     # plt.ylabel('Frequency')
     # plt.legend()
     # plt.tight_layout()
+    # # Save the plot with the chick's name
+    # plt.savefig(os.path.join(save_results_folder, f"{chick}_rms_.png"))
+
 
 
     ########################################################################################################################################
