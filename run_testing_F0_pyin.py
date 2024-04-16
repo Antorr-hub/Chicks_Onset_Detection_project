@@ -36,7 +36,7 @@ list_files = glob.glob(os.path.join(audio_folder, "*.wav"))
 
  
 #metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
-save_results_folder = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Segmentation_task\\subset_calls\\test_F0_statistics'
+save_results_folder = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Segmentation_task\\subset_calls\\test_spectral_centroid_statistics'
 if not os.path.exists(save_results_folder):
     os.makedirs(save_results_folder)
 
@@ -52,13 +52,14 @@ for file in tqdm(list_files):
 
     ##### 1- Load audio file
     audio_y, sr = lb.load(file, sr=44100)
-
+     
+    duration = len(audio_y) / sr
 
     ##### 2- Apply the Bandpass filter
     # The Bandpass filter is applied to the audio signal to remove 
     # the background noise and keep only the chick's vocalizations ( among the frequencies 2000-12500 Hz)
 
-    audio_y = ut.bp_filter(audio_y, sr, lowcut=1600, highcut=12700)
+    audio_fy = ut.bp_filter(audio_y, sr, lowcut=1600, highcut=12700)
 
     # # show the waveform 
     # plt.figure(figsize=(30, 8))
@@ -75,12 +76,12 @@ for file in tqdm(list_files):
     beta_parameters = (0.10, 0.10)
     fmin = 1800
     fmax = 12500
-    resolution = 0.01   
+    resolution = 0.05   
 
-    ### 3- Estimate pitch using PYIN    
-    f0_pyin_lb, voiced_flag, voiced_probs = lb.pyin(audio_y, sr=sr, frame_length=frame_length, hop_length=hop_length, 
-    fmin=fmin, fmax=fmax, n_thresholds=threshold, beta_parameters=beta_parameters, resolution=resolution)
-    call
+    # ## 3- Estimate pitch using PYIN    
+    # f0_pyin_lb, voiced_flag, voiced_probs = lb.pyin(audio_y, sr=sr, frame_length=frame_length, hop_length=hop_length, 
+    # fmin=fmin, fmax=fmax, n_thresholds=threshold, beta_parameters=beta_parameters, resolution=resolution)
+    
     # f0_in_times = lb.times_like(f0_pyin_lb, sr=sr, hop_length=hop_length)
     # #save f0_pyin_lb to csv
     # f0_pyin_lb_df = pd.DataFrame(f0_pyin_lb)
@@ -91,27 +92,51 @@ for file in tqdm(list_files):
     # f0_pyin_df = pd.DataFrame(f0_in_times, columns=['F0_in_Time'])
     # f0_pyin_df.to_csv(chick + '_f0_pyin_.csv', index=False)
     # Extract calls
-    f0_calls = ut.get_calls_F0(f0_pyin_lb, onsets, offsets)
-    call_F0_statistics = []
-    #### Compute for each calls statistics over the F0: Mean, Standard Deviation, Skewness, Kurtosis 
-    for i, call in enumerate(f0_calls):
-        # convert call to a DataFrame
-        f0_call = pd.DataFrame(call, columns=['F0'])
-        # compute the statistics
-        f0_call_mean, f0_call_std, f0_call_skewness, f0_call_kurtosis = f0_call['F0'].mean(), f0_call['F0'].std(), stats.skew(f0_call['F0']), stats.kurtosis(f0_call['F0'])
-        # Append statistics to the list
-        call_F0_statistics.append({
-            'Call Number': i,
-            'Mean': f0_call_mean,
-            'Standard Deviation': f0_call_std,
-            'Skewness': f0_call_skewness,
-            'Kurtosis': f0_call_kurtosis
-        })
-    print(f'The main statistic of the call are', call_F0_statistics)
-    # save the statistics to a json file
-    f0_call_statistics_filename = os.path.join(save_results_folder, f"{chick}_F0_statistics.json")
-    with open(f0_call_statistics_filename, 'w') as file:
-        json.dump(call_F0_statistics, file)
+    # f0_calls = ut.get_calls_F0(f0_pyin_lb, onsets, offsets)
+    # call_F0_statistics = []
+    # #### Compute for each calls statistics over the F0: Mean, Standard Deviation, Skewness, Kurtosis 
+    # for call in f0_calls:
+    #     # convert call to a DataFrame
+    #     f0_call = pd.DataFrame(call, columns=['F0'])
+    #     # compute the statistics
+    #     f0_call_mean, f0_call_std, f0_call_skewness, f0_call_kurtosis = f0_call['F0'].mean(), f0_call['F0'].std(), stats.skew(f0_call['F0']), stats.kurtosis(f0_call['F0'])
+    #     # Append statistics to the list
+    #     call_F0_statistics.append({
+    #         #'Call Number': i,
+    #         'Mean': f0_call_mean,
+    #         'Standard Deviation': f0_call_std,
+    #         'Skewness': f0_call_skewness,
+    #         'Kurtosis': f0_call_kurtosis
+    #     })
+    # print(f'The main statistic of the call are', call_F0_statistics)
+
+    # print(f'The main statistic of the call are', call_F0_statistics)
+    # # save the statistics to a json file
+    # f0_call_statistics_filename = os.path.join(save_results_folder, f"{chick}_F0_statistics.json")
+    # with open(f0_call_statistics_filename, 'w') as file:
+    #     json.dump(call_F0_statistics, file)
+
+    ########################################################################################################################################
+
+    # # Mapping the Hz to frequency bins
+
+
+    # f0_f1_ratio = mean_f0 / mean_f1
+    # f0_f2_ratio = mean_f0 / mean_f2
+
+    # # Create a dictionary with the ratios
+    # ratios = {
+    #     'F0/F1': f0_f1_ratio,
+    #     'F0/F2': f0_f2_ratio
+    # }
+
+    # # Save the ratios to a json file
+    # ratios_filename = os.path.join(save_results_folder, f"{chick}_ratios.json")
+    # with open(ratios_filename, 'w') as file:
+    #     json.dump(ratios, file)
+
+    # print(f'The main statistic of the call are', ratios)
+    
 
 
 ########################################################################################################################################
@@ -173,19 +198,19 @@ for file in tqdm(list_files):
 
     
     # #### 4- Segment the calls in wave files
-    # calls_wave_file = ut.get_calls_waveform(audio_y, onsets, offsets, sr= 44100)
+    # calls_wave_file = ut.get_calls_waveform(audio_fy, onsets, offsets, sr= 44100)
     # for call in calls_wave_file:
 
-    #     # Compute the rms (loudness) of the audio
-    #     rms_call = lb.feature.rms(y=call, frame_length=frame_length, hop_length=hop_length)
+        # Compute the rms (loudness) of the audio
+        # rms_call = lb.feature.rms(y=call, frame_length=frame_length, hop_length=hop_length)
         
-    #     # compute the mean and st.dev of the rms
-    #     mean_rms, st_dev_rms = np.mean(rms_call), np.std(rms_call)
-    #     # create dictionary with the mean and skewness of the rms
-    #     rms_call_statistics = {
-    #         'Mean': mean_rms,
-    #         'St.dev.': st_dev_rms
-    #     }
+        # # compute the mean and st.dev of the rms
+        # mean_rms, st_dev_rms = np.mean(rms_call), np.std(rms_call)
+        # # create dictionary with the mean and skewness of the rms
+        # rms_call_statistics = {
+        #     'Mean': mean_rms,
+        #     'St.dev.': st_dev_rms
+        # }
 
     #     print(f'The main statistic of the call are', rms_call_statistics)
 
@@ -206,6 +231,85 @@ for file in tqdm(list_files):
     # plt.tight_layout()
     # # Save the plot with the chick's name
     # plt.savefig(os.path.join(save_results_folder, f"{chick}_rms_.png"))
+
+        #### 6- Compute the Envelope of the calls 
+        # Compute the analytic signal
+        # analytic_signal = hilbert(call)
+        # # Compute the envelope
+
+        # envelope = np.abs(analytic_signal)
+        # # Compute the instantaneous phase
+        # instantaneous_phase = np.unwrap(np.angle(analytic_signal))
+        # # Compute the instantaneous frequency
+        # instantaneous_frequency = np.diff(instantaneous_phase) / (2.0 * np.pi) * sr
+        # # Compute the instantaneous amplitude
+        # instantaneous_amplitude = np.abs(analytic_signal)
+
+        # envelope_statistics = {
+        #     'Envelope': envelope,
+        #     'Instantaneous Phase': instantaneous_phase,
+        #     'Instantaneous Frequency': instantaneous_frequency,
+        #     'Instantaneous Amplitude': instantaneous_amplitude
+        # }
+
+        # print(f'The main statistic of the call are', instantaneous_frequency)
+        # print(f'The main statistic of the call are', instantaneous_amplitude)
+        # print(f'The main statistic of the call are', instantaneous_phase)
+        # print(f'The main statistic of the call are', envelope)
+        # print('work completed')
+
+
+        # save the statistics to a json file
+        # envelope_statistics_filename = os.path.join(save_results_folder, f"{chick}_envelope_statistics.json")
+        # with open(envelope_statistics_filename, 'w') as file:    
+        #     json.dump(envelope_statistics, file)
+
+        
+       
+    ########################################################################################################################################
+    S, phase = lb.magphase(lb.stft(y=audio_fy, n_fft=frame_length, hop_length=hop_length))
+    # Compute the spectrogram of the entire audio file
+    # spectrogram = np.abs(lb.stft(y=audio_y, n_fft=frame_length, hop_length=hop_length))
+    spectral_centroid_mean = []
+    # Compute spectrogram of single call
+    calls_s_files = ut.segment_spectrogram(spectrogram= S, onsets=onsets, offsets=offsets, sr=sr)
+        #### 8- Compute the mean of the Mean of the Spectral centroid
+    for call_s in calls_s_files:
+
+
+        # test spectral segmenttion
+
+
+        # Compute the spectral centroid and then extract the mean
+        spectral_centroid_call = lb.feature.spectral_centroid(S=call_s, sr=sr, n_fft=frame_length, hop_length=hop_length)
+        # spectral_centroid_call= ut.spectral_centroid(S=call_s, sr=sr, n_fft=frame_length, hop_length=hop_length)
+
+        # # compute the times for the spectral centroid
+        # spectral_centroid_times = lb.times_like(spectral_centroid[0], sr=sr, hop_length=hop_length)
+        # # save the spectral centroid to csv
+        # spectral_centroid_df = pd.DataFrame(spectral_centroid, columns=['Spectral_Centroid'])
+
+        mean_spectral_centroid = np.mean(spectral_centroid_call)
+        # create dictionary with the mean of the spectral centroid
+        
+
+        # create dictionary with the mean of the spectral centroid
+        spectral_centroid_mean.append(mean_spectral_centroid)
+        print(f'The mean spectral centroid of the call is', mean_spectral_centroid)
+
+
+        # save the spectral centroid statistics to a json file
+    spectral_centroid_statistics_filename = os.path.join(save_results_folder, f"{chick}_spectral_centroid_statistics.json")
+    with open(spectral_centroid_statistics_filename, 'w') as file:
+        json.dump(spectral_centroid_mean, file)
+
+    # # Compute the mean of the Mean of the Spectral centroid   
+
+
+
+
+
+
 
 
 
