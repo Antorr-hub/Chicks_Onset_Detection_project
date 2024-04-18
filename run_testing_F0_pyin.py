@@ -21,9 +21,9 @@ import soundfile as sf
 #audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\Data\\normalised_data_only_inside_exp_window\\Testing_set'
 
 
-audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\Data\\normalised_data_only_inside_exp_window\\Sub_testing_set'
+audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Data\\normalised_data_only_inside_exp_window\\Sub_testing_set'
 
-
+# audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\harmonics'
 #metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
 
 
@@ -36,7 +36,8 @@ list_files = glob.glob(os.path.join(audio_folder, "*.wav"))
 
  
 #metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Testing_set\\chicks_testing_metadata.csv")
-save_results_folder = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Segmentation_task\\subset_calls\\test_spectral_centroid_statistics'
+# save_results_folder = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Segmentation_task\\subset_calls\\test_spectral_centroid_statistics'
+save_results_folder = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Segmentation_task\\subset_calls\\test_segmentF0'
 if not os.path.exists(save_results_folder):
     os.makedirs(save_results_folder)
 
@@ -70,17 +71,26 @@ for file in tqdm(list_files):
     frame_length = 2048
     hop_length = 512
     win_length = frame_length // 2
+    n_fft = 2048*2
 
     # Parameters for PYIN
     threshold = 100
     beta_parameters = (0.10, 0.10)
     fmin = 1800
     fmax = 12500
-    resolution = 0.05   
+    resolution = 0.01
 
     # ## 3- Estimate pitch using PYIN    
-    # f0_pyin_lb, voiced_flag, voiced_probs = lb.pyin(audio_y, sr=sr, frame_length=frame_length, hop_length=hop_length, 
-    # fmin=fmin, fmax=fmax, n_thresholds=threshold, beta_parameters=beta_parameters, resolution=resolution)
+    f0_pyin_lb, voiced_flag, voiced_probs = lb.pyin(audio_fy, sr=sr, frame_length=frame_length, hop_length=hop_length, 
+    fmin=fmin, fmax=fmax, n_thresholds=threshold, beta_parameters=beta_parameters, resolution=resolution)  # f0 is in hertz!!
+
+    # compute spectrogram
+    S = np.abs(lb.stft(y=audio_fy, n_fft=frame_length, hop_length=hop_length))
+
+    # segment spectrogram into calls
+
+    calls_S = ut.segment_spectrogram(S, onsets, offsets, sr=sr)
+
     
     # f0_in_times = lb.times_like(f0_pyin_lb, sr=sr, hop_length=hop_length)
     # #save f0_pyin_lb to csv
@@ -91,52 +101,108 @@ for file in tqdm(list_files):
     # # Save pitch data to CSV
     # f0_pyin_df = pd.DataFrame(f0_in_times, columns=['F0_in_Time'])
     # f0_pyin_df.to_csv(chick + '_f0_pyin_.csv', index=False)
-    # Extract calls
-    # f0_calls = ut.get_calls_F0(f0_pyin_lb, onsets, offsets)
-    # call_F0_statistics = []
-    # #### Compute for each calls statistics over the F0: Mean, Standard Deviation, Skewness, Kurtosis 
-    # for call in f0_calls:
-    #     # convert call to a DataFrame
-    #     f0_call = pd.DataFrame(call, columns=['F0'])
-    #     # compute the statistics
-    #     f0_call_mean, f0_call_std, f0_call_skewness, f0_call_kurtosis = f0_call['F0'].mean(), f0_call['F0'].std(), stats.skew(f0_call['F0']), stats.kurtosis(f0_call['F0'])
-    #     # Append statistics to the list
-    #     call_F0_statistics.append({
-    #         #'Call Number': i,
-    #         'Mean': f0_call_mean,
-    #         'Standard Deviation': f0_call_std,
-    #         'Skewness': f0_call_skewness,
-    #         'Kurtosis': f0_call_kurtosis
-    #     })
-    # print(f'The main statistic of the call are', call_F0_statistics)
-
-    # print(f'The main statistic of the call are', call_F0_statistics)
-    # # save the statistics to a json file
-    # f0_call_statistics_filename = os.path.join(save_results_folder, f"{chick}_F0_statistics.json")
-    # with open(f0_call_statistics_filename, 'w') as file:
-    #     json.dump(call_F0_statistics, file)
-
-    ########################################################################################################################################
-
-    # # Mapping the Hz to frequency bins
+    # #Extract calls
+    f0_calls = ut.get_calls_F0(f0_pyin_lb, onsets, offsets, sr, hop_length, n_fft)
+    call_numbers = []
+    F0_means = []
+    F0_stds = []
+    F0_skewnesses = []
+    F0_kurtosises = []
+    F1_means = []
+    F2_means = []
+    F0_F1_ratios = []
+    F0_F2_ratios = []
+    F0_fst_order_diffs = []
 
 
-    # f0_f1_ratio = mean_f0 / mean_f1
-    # f0_f2_ratio = mean_f0 / mean_f2
+    #### Compute for each calls statistics over the F0: Mean, Standard Deviation, Skewness, Kurtosis 
+    for i,  f0_call in enumerate(f0_calls):
 
-    # # Create a dictionary with the ratios
-    # ratios = {
-    #     'F0/F1': f0_f1_ratio,
-    #     'F0/F2': f0_f2_ratio
-    # }
+        f0_call_without_nans = f0_call[~np.isnan(f0_call)]
+        f0_call_nan_zeros = np.nan_to_num(f0_call)
+        # compute the statistics
+        f0_call_mean = f0_call_without_nans.mean()
+        f0_call_std = f0_call_without_nans.std()
+        f0_call_skewness = stats.skew(f0_call_without_nans)
+        f0_call_kurtosis = stats.kurtosis(f0_call)
+        
+        call_numbers.append(i)
+        F0_means.append(f0_call_mean)
+        F0_stds.append(f0_call_std)
+        F0_skewnesses.append(f0_call_skewness)
+        F0_kurtosises.append(f0_call_kurtosis)
 
-    # # Save the ratios to a json file
-    # ratios_filename = os.path.join(save_results_folder, f"{chick}_ratios.json")
-    # with open(ratios_filename, 'w') as file:
-    #     json.dump(ratios, file)
+        # compute the 1st derivative of the F0
+        f0_fst_order_diff = np.diff(f0_call)
+        F0_fst_order_diffs.append(f0_fst_order_diff)
 
-    # print(f'The main statistic of the call are', ratios)
+
+        F1_Hz = f0_call_nan_zeros*2    
+        F2_Hz = f0_call_nan_zeros*3
+        F1_Hz_withoutNans = f0_call_without_nans*2
+        F2_Hz_withoutNans = f0_call_without_nans*3
+
+        F1_Hz_mean = np.mean(F1_Hz_withoutNans)
+        F2_Hz_mean = np.mean(F2_Hz_withoutNans)
+        F1_means.append(F1_Hz_mean)
+        F2_means.append(F2_Hz_mean)
+
+
+        f0_frqbin = f0_call_mean * n_fft / sr
+        f1_frqbin = F1_Hz_mean * n_fft / sr
+        f2_frqbin = F2_Hz_mean * n_fft / sr
+
+                # get magnitude at F1, and F2 and F0
+        F0_mag =calls_S[i][int(f0_frqbin)]
+        F1_mag =calls_S[i][int(f1_frqbin)]
+        F2_mag =calls_S[i][int(f2_frqbin)]
+
+        # compute magnitude ratios betwween f0 and f1, and f0 and f2
+        F0_F1_ratio = F0_mag / F1_mag
+        F0_F2_ratio = F0_mag / F2_mag
+        F0_F1_ratios.append(F0_F1_ratio)
+        F0_F2_ratios.append(F0_F2_ratio)
+
+       
+               #  visualise F0, F1 and F2 on top of the spectrogram
+    ####
+
+        # Plot the linear spectrogram
+        plt.figure(figsize=(10, 5))
+        lb.display.specshow(lb.amplitude_to_db(calls_S[i], ref=np.max), sr=sr, hop_length=hop_length, x_axis='time', y_axis='linear', cmap='viridis', alpha=0.75)
+        times = lb.times_like(f0_call_nan_zeros, sr=sr, hop_length=hop_length)
+
+        plt.plot(times, f0_call_nan_zeros, label='Pitch (Hz)', color='red')
+        # plt.plot(f0_pyin_lb_nan_zeros, label='Pitch (Hz)', color='red')
+
+        plt.plot(times, F1_Hz, label='F1 (Hz)', color='blue')
+        plt.plot(times, F2_Hz, label='F2 (Hz)', color='green')
+        # plt.colorbar(format='%+2.0f dB')
+        plt.title('Linear Spectrogram and F0, F1, F2')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Frequency')
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
     
+
+        
+    f0_features_calls = pd.DataFrame()
+    f0_features_calls['Call Number'] = call_numbers
+    f0_features_calls['F0 Mean'] = F0_means
+    f0_features_calls['F0 Std'] = F0_stds
+    f0_features_calls['F0 Skewness'] = F0_skewnesses
+    f0_features_calls['F0 Kurtosis'] = F0_kurtosises
+
+    f0_features_calls['F0 1st Order Diff'] = F0_fst_order_diffs
+    f0_features_calls['F1 Mean'] = F1_means
+    f0_features_calls['F2 Mean'] = F2_means
+    f0_features_calls['F0-F1 Ratio'] = F0_F1_ratios
+    f0_features_calls['F0-F2 Ratio'] = F0_F2_ratios
+
+
+    f0_features_calls.to_csv(os.path.join(save_results_folder, f"{chick}_F0_features.csv"), index=False)
+
 
 
 ########################################################################################################################################
@@ -267,41 +333,41 @@ for file in tqdm(list_files):
         
        
     ########################################################################################################################################
-    S, phase = lb.magphase(lb.stft(y=audio_fy, n_fft=frame_length, hop_length=hop_length))
-    # Compute the spectrogram of the entire audio file
-    # spectrogram = np.abs(lb.stft(y=audio_y, n_fft=frame_length, hop_length=hop_length))
-    spectral_centroid_mean = []
-    # Compute spectrogram of single call
-    calls_s_files = ut.segment_spectrogram(spectrogram= S, onsets=onsets, offsets=offsets, sr=sr)
-        #### 8- Compute the mean of the Mean of the Spectral centroid
-    for call_s in calls_s_files:
+    # S, phase = lb.magphase(lb.stft(y=audio_fy, n_fft=frame_length, hop_length=hop_length))
+    # # Compute the spectrogram of the entire audio file
+    # # spectrogram = np.abs(lb.stft(y=audio_y, n_fft=frame_length, hop_length=hop_length))
+    # spectral_centroid_mean = []
+    # # Compute spectrogram of single call
+    # calls_s_files = ut.segment_spectrogram(spectrogram= S, onsets=onsets, offsets=offsets, sr=sr)
+    #     #### 8- Compute the mean of the Mean of the Spectral centroid
+    # for call_s in calls_s_files:
 
 
-        # test spectral segmenttion
+    #     # test spectral segmenttion
 
 
-        # Compute the spectral centroid and then extract the mean
-        spectral_centroid_call = lb.feature.spectral_centroid(S=call_s, sr=sr, n_fft=frame_length, hop_length=hop_length)
-        # spectral_centroid_call= ut.spectral_centroid(S=call_s, sr=sr, n_fft=frame_length, hop_length=hop_length)
+    #     # Compute the spectral centroid and then extract the mean
+    #     spectral_centroid_call = lb.feature.spectral_centroid(S=call_s, sr=sr, n_fft=frame_length, hop_length=hop_length)
+    #     # spectral_centroid_call= ut.spectral_centroid(S=call_s, sr=sr, n_fft=frame_length, hop_length=hop_length)
 
-        # # compute the times for the spectral centroid
-        # spectral_centroid_times = lb.times_like(spectral_centroid[0], sr=sr, hop_length=hop_length)
-        # # save the spectral centroid to csv
-        # spectral_centroid_df = pd.DataFrame(spectral_centroid, columns=['Spectral_Centroid'])
+    #     # # compute the times for the spectral centroid
+    #     # spectral_centroid_times = lb.times_like(spectral_centroid[0], sr=sr, hop_length=hop_length)
+    #     # # save the spectral centroid to csv
+    #     # spectral_centroid_df = pd.DataFrame(spectral_centroid, columns=['Spectral_Centroid'])
 
-        mean_spectral_centroid = np.mean(spectral_centroid_call)
-        # create dictionary with the mean of the spectral centroid
+    #     mean_spectral_centroid = np.mean(spectral_centroid_call)
+    #     # create dictionary with the mean of the spectral centroid
         
 
-        # create dictionary with the mean of the spectral centroid
-        spectral_centroid_mean.append(mean_spectral_centroid)
-        print(f'The mean spectral centroid of the call is', mean_spectral_centroid)
+    #     # create dictionary with the mean of the spectral centroid
+    #     spectral_centroid_mean.append(mean_spectral_centroid)
+    #     print(f'The mean spectral centroid of the call is', mean_spectral_centroid)
 
 
-        # save the spectral centroid statistics to a json file
-    spectral_centroid_statistics_filename = os.path.join(save_results_folder, f"{chick}_spectral_centroid_statistics.json")
-    with open(spectral_centroid_statistics_filename, 'w') as file:
-        json.dump(spectral_centroid_mean, file)
+    #     # save the spectral centroid statistics to a json file
+    # spectral_centroid_statistics_filename = os.path.join(save_results_folder, f"{chick}_spectral_centroid_statistics.json")
+    # with open(spectral_centroid_statistics_filename, 'w') as file:
+    #     json.dump(spectral_centroid_mean, file)
 
     # # Compute the mean of the Mean of the Spectral centroid   
 
