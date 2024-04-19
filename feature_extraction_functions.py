@@ -32,10 +32,116 @@ def visualise_spectrogram_and_harmonics(spec, F0, F1, F2, sr, hop_length):
     plt.xlabel('Time (s)')
     plt.ylabel('Frequency')
     plt.legend()
-    plt.tight_layout()
     plt.show()
     
     return
+
+
+def visualise_spectrogram_and_spectral_centroid(spec, spectral_centroid, sr, hop_length):
+
+    # Plot the linear spectrogram
+    plt.figure(figsize=(10, 5))
+    lb.display.specshow(lb.amplitude_to_db(S, ref=np.max), sr=sr, hop_length=hop_length, x_axis='time', y_axis='linear', cmap='viridis', alpha=0.75)
+    times = lb.times_like(spectral_centroid, sr=sr, hop_length=hop_length)
+
+    plt.plot(times, spectral_centroid, label='Spectral Centroid', color='red')
+    # plt.colorbar(format='%+2.0f dB')
+    plt.title('Linear Spectrogram and Spectral Centroid')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Frequency')
+    plt.legend()
+    plt.show()
+    
+    return  
+
+
+def spectral_centroid(audio_fy, features_data, sr, frame_length, hop_length):
+
+    ''' Compute the mean of the spectral centroid for each call in the audio file
+    returns: return the mean of the spectral centroid for each call in the audio file
+    '''
+    onsets_sec = features_data.onsets_sec
+    offsets_sec = features_data.offsets_sec
+
+   
+    Spectral_Centroid_mean = [] 
+    call_numbers = []
+    # Compute the spectrogram of the entire audio file
+    lin_spec= np.abs(lb.stft(y=audio_fy, n_fft=frame_length, hop_length=hop_length))
+        
+    # Extract the spectrogram calls from the audio file
+    calls_s_files = ut.segment_spectrogram(spectrogram= lin_spec, onsets=onsets_sec, offsets=offsets_sec, sr=sr)
+      
+
+    for i, call_s in enumerate(calls_s_files):
+        call_numbers.append(i)
+        # Compute the spectral centroid and then extract the mean
+        spectral_centroid_call = lb.feature.spectral_centroid(S=call_s, sr=sr, n_fft=frame_length, hop_length=hop_length)
+        # deal with nans
+        spectral_centroid_without_nans = spectral_centroid_call[~np.isnan(spectral_centroid_call)]
+        # replace nans with zeros
+        if spectral_centroid_without_nans.size == 0:
+            Spectral_Centroid_mean.append(np.nan)
+            continue 
+        else:     
+        # compute the mean of the spectral centroid
+            mean_spectral_centroid = np.mean(spectral_centroid_without_nans)
+            Spectral_Centroid_mean.append(mean_spectral_centroid)
+    
+    spectral_centroid_feature_calls = pd.DataFrame()
+    spectral_centroid_feature_calls['Spectral Centroid Mean'] = mean_spectral_centroid
+
+    features_data['Spectral Centroid Mean'] = mean_spectral_centroid
+
+    return spectral_centroid_feature_calls, features_data
+
+
+
+
+
+
+
+def rms_features(audio_fy, features_data, sr, frame_length, hop_length):
+    ''' Compute the mean and the standard deviation of the RMS of each call in the audio file'''
+
+    onsets_sec = features_data.onsets_sec
+    offsets_sec = features_data.offsets_sec
+
+    RMS_mean = []
+    RMS_std = []
+
+    # Extract the waveform segments from the audio file
+    calls_wave_file = ut.get_calls_waveform(audio_fy, onsets_sec, offsets_sec, sr, frame_length, hop_length)
+
+    for i, call in enumerate(calls_wave_file):
+        rms_call = lb.feature.rms(y=call, frame_length=frame_length, hop_length=hop_length)
+
+        rms_call_without_nans = rms_call[~np.isnan(rms_call)]
+        if rms_call_without_nans.size == 0:
+            RMS_mean.append(np.nan)
+            RMS_std.append(np.nan)
+            continue
+        else:
+            mean_rms = np.mean(rms_call_without_nans)
+            st_dev_rms = np.std(rms_call_without_nans)
+            RMS_mean.append(mean_rms)
+            RMS_std.append(st_dev_rms)
+
+    rms_features_calls = pd.DataFrame()
+    rms_features_calls['RMS Mean'] = RMS_mean
+    rms_features_calls['RMS Std'] = RMS_std
+
+    features_data['RMS Mean'] = RMS_mean
+    features_data['RMS Std'] = RMS_std
+
+    return rms_features_calls, features_data
+
+
+
+
+
+
+
 
 def compute_f0_features(audio, features_data ,sr, hop_length, frame_length, n_fft, pyin_fmin_hz, pyin_fmax_hz, pyin_beta, pyin_ths, pyin_resolution):
 
@@ -74,47 +180,59 @@ def compute_f0_features(audio, features_data ,sr, hop_length, frame_length, n_ff
 
     # compute the statistics for each call 
     for i,  f0_call in enumerate(f0_calls):
-
-        f0_call_without_nans = f0_call[~np.isnan(f0_call)]
-        # compute the statistics
-        f0_call_mean = f0_call_without_nans.mean()
-        f0_call_std = f0_call_without_nans.std()
-        f0_call_skewness = stats.skew(f0_call_without_nans)
-        f0_call_kurtosis = stats.kurtosis(f0_call)
-        
         call_numbers.append(i)
-        F0_means.append(f0_call_mean)
-        F0_stds.append(f0_call_std)
-        F0_skewnesses.append(f0_call_skewness)
-        F0_kurtosises.append(f0_call_kurtosis)
+        f0_call_without_nans = f0_call[~np.isnan(f0_call)]
+        if f0_call_without_nans.size == 0:
+            F0_means.append(np.nan)
+            F0_stds.append(np.nan)
+            F0_skewnesses.append(np.nan)
+            F0_kurtosises.append(np.nan)
+            F0_fst_order_diffs.append(np.nan)
+            F1_means.append(np.nan)
+            F2_means.append(np.nan)
+            F0_F1_ratios.append(np.nan)
+            F0_F2_ratios.append(np.nan)
+            continue
+        else:
+            # compute the statistics
+            f0_call_mean = f0_call_without_nans.mean()
+            f0_call_std = f0_call_without_nans.std()
+            f0_call_skewness = stats.skew(f0_call_without_nans)
+            f0_call_kurtosis = stats.kurtosis(f0_call)
+            
+            
+            F0_means.append(f0_call_mean)
+            F0_stds.append(f0_call_std)
+            F0_skewnesses.append(f0_call_skewness)
+            F0_kurtosises.append(f0_call_kurtosis)
 
-        # compute the 1st derivative of the F0
-        f0_fst_order_diff = np.diff(f0_call)
-        F0_fst_order_diffs.append(f0_fst_order_diff)
+            # compute the 1st derivative of the F0
+            f0_fst_order_diff = np.diff(f0_call)
+            F0_fst_order_diffs.append(f0_fst_order_diff)
 
-        F1_Hz_withoutNans = f0_call_without_nans*2
-        F2_Hz_withoutNans = f0_call_without_nans*3
+            F1_Hz_withoutNans = f0_call_without_nans*2
+            F2_Hz_withoutNans = f0_call_without_nans*3
 
-        F1_Hz_mean = np.mean(F1_Hz_withoutNans)
-        F2_Hz_mean = np.mean(F2_Hz_withoutNans)
-        F1_means.append(F1_Hz_mean)
-        F2_means.append(F2_Hz_mean)
+            F1_Hz_mean = np.mean(F1_Hz_withoutNans)
+            F2_Hz_mean = np.mean(F2_Hz_withoutNans)
+            F1_means.append(F1_Hz_mean)
+            F2_means.append(F2_Hz_mean)
 
 
-        f0_frqbin = f0_call_mean * n_fft / sr
-        f1_frqbin = F1_Hz_mean * n_fft / sr
-        f2_frqbin = F2_Hz_mean * n_fft / sr
+            f0_frqbin = f0_call_mean * n_fft / sr
+            f1_frqbin = F1_Hz_mean * n_fft / sr
+            f2_frqbin = F2_Hz_mean * n_fft / sr
 
-                # get magnitude at F1, and F2 and F0
-        F0_mag =calls_S[i][int(f0_frqbin)]
-        F1_mag =calls_S[i][int(f1_frqbin)]
-        F2_mag =calls_S[i][int(f2_frqbin)]
+            # get magnitude at F1, and F2 and F0
+            F0_mag =calls_S[i][int(f0_frqbin)]
+            F1_mag =calls_S[i][int(f1_frqbin)]
+            F2_mag =calls_S[i][int(f2_frqbin)]
 
-        # compute magnitude ratios betwween f0 and f1, and f0 and f2
-        F0_F1_ratio = F0_mag / F1_mag
-        F0_F2_ratio = F0_mag / F2_mag
-        F0_F1_ratios.append(F0_F1_ratio)
-        F0_F2_ratios.append(F0_F2_ratio)
+            # compute magnitude ratios betwween f0 and f1, and f0 and f2
+            F0_F1_ratio = F0_mag / F1_mag
+            F0_F2_ratio = F0_mag / F2_mag
+            F0_F1_ratios.append(F0_F1_ratio)
+            F0_F2_ratios.append(F0_F2_ratio)
 
        
     #  visualise F0, F1 and F2 on top of the spectrogram
@@ -176,10 +294,10 @@ if __name__ == '__main__':
     pyin_fmax_hz = 12500
     pyin_beta = (0.10, 0.10)
     pyin_ths = 100
-    pyin_resolution = 1
+    pyin_resolution = 0.02
 
 
-    f0_features_calls, F0_wholesignal, features_data = compute_f0_features(audio, features_data,sr, hop_length, frame_length, win_length, n_fft, pyin_fmin_hz, pyin_fmax_hz, pyin_beta, pyin_ths, pyin_resolution)
+    f0_features_calls, F0_wholesignal, features_data = compute_f0_features(audio, features_data,sr, hop_length, frame_length, n_fft, pyin_fmin_hz, pyin_fmax_hz, pyin_beta, pyin_ths, pyin_resolution)
     
     
     F1_Hz = F0_wholesignal*2
@@ -187,7 +305,15 @@ if __name__ == '__main__':
     S = np.abs(lb.stft(y=audio, n_fft=frame_length, hop_length=hop_length))
     visualise_spectrogram_and_harmonics(S, F0_wholesignal, F1_Hz, F2_Hz, sr, hop_length)
 
+    # save locally features_data to a csv file
+    features_data.to_csv(save_features_file, index=False)
     
+
+    spectral_centroid_feature_calls, features_data = spectral_centroid(audio_fy, features_data, sr, frame_length, hop_length)
+
+    visualise_spectrogram_and_spectral_centroid(S, spectral_centroid_feature_calls, sr, hop_length)
+    
+    features_data.to_csv(save_features_file, index=False)
     
 
 
