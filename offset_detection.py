@@ -12,7 +12,7 @@ AV_DURATION = 0.19
 
 
 
-def offset_detection_on_spectrograms(file_name, onsets, min_duration= MIN_DURATION, max_duration= MAX_DURATION, av_duration= AV_DURATION):
+def offset_detection_local_minimum(file_name, onsets, min_duration= MIN_DURATION, max_duration= MAX_DURATION, av_duration= AV_DURATION):
     
     y, sr= lb.load(file_name, sr=44100)
     
@@ -52,7 +52,7 @@ def offset_detection_on_spectrograms(file_name, onsets, min_duration= MIN_DURATI
     return np.array(offsets)    
 
 
-def offset_detection_based_neg_slope_energy(file_name, onsets, gt_offsets,  min_duration= MIN_DURATION, max_duration= MAX_DURATION, av_duration= AV_DURATION):
+def offset_detection_first_order(file_name, onsets, gt_offsets,  min_duration= MIN_DURATION, max_duration= MAX_DURATION, av_duration= AV_DURATION):
     
     y, sr= lb.load(file_name, sr=44100)
     # plot_signal(y)
@@ -145,7 +145,7 @@ def offset_detection_based_neg_slope_energy(file_name, onsets, gt_offsets,  min_
 
 
 
-def offset_detection_based_second_order(file_name, onsets,  min_duration= MIN_DURATION, max_duration= MAX_DURATION, av_duration= AV_DURATION):
+def offset_detection_second_order(file_name, onsets,  min_duration= MIN_DURATION, max_duration= MAX_DURATION, av_duration= AV_DURATION):
     
     y, sr= lb.load(file_name, sr=44100)
     # plot_signal(y)

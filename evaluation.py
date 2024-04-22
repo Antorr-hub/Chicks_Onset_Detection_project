@@ -171,25 +171,6 @@ def get_reference_onsets(file_txt):
     return np.array(gt_onsets)
 
 
-
-
-def get_external_reference_offsets(file_txt):
-    gt_offsets = []
-    with open(file_txt, "r",  encoding='latin-1') as file:
-            rows = file.readlines()
-
-    for row in rows:
-        columns = row.split()
-
-        if columns:
-            second_value = float(columns[0])
-            gt_offsets.append(second_value) 
-    assert gt_offsets, "File cannot be read!"
-    return np.array(gt_offsets)
-
-
-
-
 def get_reference_offsets(file_txt):
     gt_offsets = []
     with open(file_txt, "r",  encoding='latin-1') as file:
@@ -203,6 +184,23 @@ def get_reference_offsets(file_txt):
             gt_offsets.append(second_value) 
     assert gt_offsets, "File cannot be read!"
 
+    return np.array(gt_offsets)
+
+
+
+# this function is used to compute the referen offsets when we have already computed the onsets
+def get_external_reference_offsets(file_txt):
+    gt_offsets = []
+    with open(file_txt, "r",  encoding='latin-1') as file:
+            rows = file.readlines()
+
+    for row in rows:
+        columns = row.split()
+
+        if columns:
+            second_value = float(columns[0])
+            gt_offsets.append(second_value) 
+    assert gt_offsets, "File cannot be read!"
     return np.array(gt_offsets)
 
 

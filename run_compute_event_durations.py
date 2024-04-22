@@ -15,16 +15,16 @@ average_durations = {}
 minimum_durations = {}
 maximum_durations = {}
 # Path to the folder containing the txt files to be evaluated
-audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\Data\\normalised_data_only_inside_exp_window\\Training_set'
+audio_folder = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Data\\normalised_data_only_inside_exp_window\\Testing_set'
 
 # metadata = pd.read_csv("C:\\Users\\anton\\Data_normalised\\Training_set\\chicks_training_metadata.csv")
 
 # Path to the folder where the evaluation results will be saved
-save_evaluation_results_path = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Duration_from_training_calls'
+save_evaluation_results_path = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Duration_from_testing_calls'
 if not os.path.exists(save_evaluation_results_path):
     os.makedirs(save_evaluation_results_path)
 
-offset_folder_predicted = r'C:\\Users\\anton\\Chicks_Onset_Detection_project\\offset_detection\\results_predicted_offsets\\training_offset_first_order'
+offset_folder_predicted = 'C:\\Users\\anton\\Chicks_Onset_Detection_project\\Data\\normalised_data_only_inside_exp_window\\Testing_set'
 
 n_events_list = []
 list_files = glob.glob(os.path.join(audio_folder, "*.wav"))
@@ -44,9 +44,10 @@ for file in tqdm(list_files):
     
 
     #offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt'))
-    predicted_offsets = my_eval.get_external_reference_offsets(pred_off_file)
-    gt_onsets = my_eval.get_reference_onsets(file.replace('.wav', '.txt'))
-    gt_offsets = my_eval.get_reference_offsets(file.replace('.wav', '.txt'))
+    
+
+    gt_onsets = my_eval.get_reference_onsets(pred_off_file)
+    predicted_offsets = my_eval.get_reference_offsets(pred_off_file)
     # match the instances of the ground truth onsets with the instances of the estimated offsets in time 
   
     # # Retrieve experiment window boundaries
